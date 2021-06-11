@@ -1,0 +1,95 @@
+version: "3"
+services:
+  traefik:
+    image: "traefik:v2.3"
+    container_name: "traefik-MS"
+    command:
+        - "--global.sendAnonymousUsage=false"
+        #- "--log.level=DEBUG"
+        - "--api.insecure=true"
+        - "--providers.docker=true"
+        - "--providers.docker.exposedbydefault=false"
+        - "--entrypoints.web.address=:80"
+    ports:
+        - "80:80"
+        - "8080:8080"
+    volumes:
+        - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+        - jedinetwork
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+        - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+    mem_limit: 128mb
+    
+  database:
+    image: postgres:alpine
+    container_name: postgres-MS
+    restart: on-failure
+    ports: 
+        - "5432:5432"
+    environment: 
+        POSTGRES_USER: pguser
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_MULTIPLE_DATABASES: bookstore
+    volumes: 
+        - ./deployments/local/pg:/docker-entrypoint-initdb.d/
+    env_file: 
+        - "./.env"
+    networks: 
+        - jedinetwork
+    mem_limit: 1gb
+    
+  pgadmin:
+    depends_on: 
+        - database
+    image: dpage/pgadmin4
+    container_name: "pgadmin-MS"
+    environment:
+        # HOST: host.docker.internal
+        PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+        PGADMIN_DEFAULT_PASSWORD: "postgres"
+    ports: 
+        - "8001:80"
+    networks: 
+        - jedinetwork
+    labels:
+        - "traefik.enable=true"
+        # - "traefik.tcp.routers.pgadmin.rule=Host(`pgadmin.localhost`)"
+        # - "traefik.tcp.services.pgadmin.loadbalancer.server.port=8001"
+        - "traefik.http.routers.pgadmin.entrypoints=web"
+        - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.localhost`)"
+        - "traefik.http.services.pgadmin.loadbalancer.server.port=8001"
+    mem_limit: 128mb
+
+#   node-exporter:
+#     image: prom/node-exporter:latest
+#     container_name: node-exporter
+#     restart: on-failure
+#     ports:
+#       - "9100:9100"
+#     networks:
+#       - jedinetwork
+#     mem_limit: 128mb
+
+#   cadvisor:
+#     image: gcr.io/google-containers/cadvisor:latest
+#     container_name: cadvisor
+#     restart: on-failure
+#     ports:
+#       - "9080:8080"
+#     networks:
+#       - jedinetwork
+#     volumes:
+#       - /:/rootfs:ro
+#       - /var/run:/var/run:rw
+#       - /sys:/sys:ro
+#       - /var/lib/docker/:/var/lib/docker:ro
+#     depends_on:
+#       - "redis"
+#     mem_limit: 128mb  
+
+networks:
+    jedinetwork:
+        driver: bridge
