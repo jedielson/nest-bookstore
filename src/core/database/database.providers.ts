@@ -1,4 +1,6 @@
 import { Sequelize } from 'sequelize-typescript';
+import { Author, BookAuthor } from 'src/modules/bookstore/author/author.entity';
+import { Book } from 'src/modules/bookstore/book/book.entity';
 import { User } from 'src/modules/users/user.entity';
 import { SEQUELIZE, DEVELOPMENT, TEST, PRODUCTION } from '../constants';
 import { databaseConfig } from './database.config';
@@ -22,7 +24,7 @@ export const databaseProviders = [
           config = databaseConfig.development;
       }
       const sequelize = new Sequelize(config);
-      sequelize.addModels([User]);
+      sequelize.addModels([User, Author, Book, BookAuthor]);
       await sequelize.sync();
       return sequelize;
     },
