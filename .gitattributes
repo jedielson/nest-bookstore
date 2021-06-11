@@ -1,0 +1,9 @@
+# 2010
+*.txt -crlf
+*.js -crlf
+*.ts -crlf
+
+# 2020
+*.txt text eol=lf 
+*.js text eol=lf 
+*.ts text eol=lf 

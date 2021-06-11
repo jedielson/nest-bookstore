@@ -1,5 +1,6 @@
 import { Controller, Post, UseGuards, Request, Body } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { DoesUserExistGuard } from 'src/core/guards/does-user-exist.guard';
 import { UserDto } from '../users/dto/user.dto';
 import { AuthService } from './auth.service';
 
@@ -13,6 +14,7 @@ export class AuthController {
     return await this.authService.login(req.user);
   }
 
+  @UseGuards(DoesUserExistGuard)
   @Post('signup')
   async signUp(@Body() user: UserDto) {
     return await this.authService.create(user);
