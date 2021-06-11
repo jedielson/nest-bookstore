@@ -8,7 +8,13 @@ import { AuthModule } from './modules/auth/auth.module';
 import { BookstoreModule } from './modules/bookstore/bookstore.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, UsersModule, AuthModule, BookstoreModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
+    UsersModule,
+    AuthModule,
+    BookstoreModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
