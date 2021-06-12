@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { BookService } from './book.service';
 import { CreateBookRequest } from './dto/create-book.dto';
 import { GetBooksRequest } from './dto/get-books.dto';
@@ -15,5 +23,10 @@ export class BookController {
   @Post()
   create(@Body() req: CreateBookRequest) {
     return this.bookService.create(req);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: number) {
+    return this.bookService.delete(id);
   }
 }

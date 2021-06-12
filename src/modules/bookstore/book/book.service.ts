@@ -62,4 +62,20 @@ export class BookService {
       publicationYear: data.publicationYear,
     };
   }
+
+  async delete(id: number): Promise<number> {
+    const book = await this.bookRepository.findByPk(id);
+
+    if (!book) {
+      throw new NotFoundException();
+    }
+
+    return this.bookRepository.destroy({
+      where: {
+        id: {
+          [Op.eq]: id,
+        },
+      },
+    });
+  }
 }
