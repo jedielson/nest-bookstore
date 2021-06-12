@@ -13,6 +13,7 @@ export class GetBooksRequest {
 }
 
 export interface GetBooksResponse {
+  id: number;
   name: string;
   edition: string;
   publicationYear: number;
