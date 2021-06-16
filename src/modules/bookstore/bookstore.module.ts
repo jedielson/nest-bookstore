@@ -6,6 +6,9 @@ import { BookService } from './book/book.service';
 import { authorProviders } from './author/author.providers';
 import { bookProviders } from './book/book.providers';
 import { BookRulesService } from './book/book-rules/book-rules.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Book } from './book/book.entity';
+import { Author } from './author/author.entity';
 
 @Module({
   controllers: [AuthorController, BookController],
@@ -17,5 +20,6 @@ import { BookRulesService } from './book/book-rules/book-rules.service';
     BookRulesService,
   ],
   exports: [AuthorService, BookService],
+  imports: [TypeOrmModule.forFeature([Book, Author])],
 })
 export class BookstoreModule {}

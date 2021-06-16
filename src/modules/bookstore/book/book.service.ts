@@ -1,6 +1,6 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Op } from 'sequelize';
-import { AUTHOR_REPOSITORY, BOOK_REPOSITORY } from 'src/core/constants';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Author } from '../author/author.entity';
 import { BookRulesService } from './book-rules/book-rules.service';
 import { Book } from './book.entity';
@@ -11,17 +11,18 @@ import { UpdateBookRequest, UpdateBookResponse } from './dto/update-book.dto';
 @Injectable()
 export class BookService {
   constructor(
-    @Inject(BOOK_REPOSITORY) private readonly bookRepository: typeof Book,
-    @Inject(AUTHOR_REPOSITORY) private readonly authorRepository: typeof Author,
+    @InjectRepository(Book) private readonly bookRepository: Repository<Book>,
+    @InjectRepository(Author)
+    private readonly authorRepository: Repository<Author>,
     private readonly bookRules: BookRulesService,
   ) {}
 
   async getAll(req: GetBooksRequest): Promise<GetBooksResponse[]> {
-    const data = await this.bookRepository.findAndCountAll({
-      offset: req.offset,
-      limit: req.limit,
+    const data = await this.bookRepository.findAndCount({
+      skip: req.offset,
+      take: req.limit,
     });
-    return data.rows.map((x) => {
+    return data[0].map((x) => {
       return {
         id: x.id,
         name: x.name,
@@ -35,7 +36,7 @@ export class BookService {
     const authorExists = await this.bookRules.authorsMustExist(req.author);
     const author = authorExists.unwrap();
 
-    const data = await this.bookRepository.create<Book>({
+    const data = await this.bookRepository.create({
       name: req.name,
       edition: req.edition,
       publicationYear: req.publicationYear,
@@ -50,7 +51,7 @@ export class BookService {
   }
 
   async update(req: UpdateBookRequest): Promise<UpdateBookResponse> {
-    const book = await this.bookRepository.findByPk(req.id);
+    const book = await this.bookRepository.findOne(req.id);
 
     const authorExists = await this.bookRules.authorsMustExist(req.author);
     const author = authorExists.unwrap();
@@ -60,13 +61,7 @@ export class BookService {
     book.name = book.name;
     book.authors = author;
 
-    const lol = await this.bookRepository.update(book, {
-      where: {
-        id: {
-          [Op.eq]: req.id,
-        },
-      },
-    });
+    const lol = await this.bookRepository.save(book);
 
     console.log(lol);
 
@@ -78,19 +73,13 @@ export class BookService {
     };
   }
 
-  async delete(id: number): Promise<number> {
-    const book = await this.bookRepository.findByPk(id);
+  async delete(id: number): Promise<void> {
+    const book = await this.bookRepository.findOne(id);
 
     if (!book) {
       throw new NotFoundException();
     }
 
-    return this.bookRepository.destroy({
-      where: {
-        id: {
-          [Op.eq]: id,
-        },
-      },
-    });
+    await this.bookRepository.remove(book);
   }
 }

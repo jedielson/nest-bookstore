@@ -1,9 +1,5 @@
 import { IsNotEmpty, MinLength, IsEmail, IsEnum } from 'class-validator';
-
-enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-}
+import { Gender } from '../user.entity';
 
 export class UserDto {
   @IsNotEmpty()

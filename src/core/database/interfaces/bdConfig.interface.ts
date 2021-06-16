@@ -1,15 +1,6 @@
-export interface IDatabaseConfigAttributes {
-  username?: string;
-  password?: string;
-  database?: string;
-  host?: string;
-  port?: number | string;
-  dialect?: string;
-  urlDatabase?: string;
-}
-
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 export interface IDatabaseConfig {
-  development: IDatabaseConfigAttributes;
-  test: IDatabaseConfigAttributes;
-  production: IDatabaseConfigAttributes;
+  development: TypeOrmModuleOptions;
+  test: TypeOrmModuleOptions;
+  production: TypeOrmModuleOptions;
 }

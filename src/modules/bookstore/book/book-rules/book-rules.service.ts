@@ -1,21 +1,21 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { AUTHOR_REPOSITORY, BOOK_REPOSITORY } from 'src/core/constants';
 import { Author } from '../../author/author.entity';
 import { Book } from '../book.entity';
 import { Result } from '@badrap/result';
-import { Op } from 'sequelize';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BookRulesService {
   constructor(
-    @Inject(BOOK_REPOSITORY) private readonly bookRepository: typeof Book,
-    @Inject(AUTHOR_REPOSITORY) private readonly authorRepository: typeof Author,
+    @InjectRepository(Book) private readonly bookRepository: Repository<Book>,
+    @InjectRepository(Author)
+    private readonly authorRepository: Repository<Author>,
   ) {}
 
   async authorsMustExist(authors: number[]): Promise<Result<Author[], Error>> {
@@ -26,13 +26,7 @@ export class BookRulesService {
       );
     }
 
-    const data = await this.authorRepository.findAll({
-      where: {
-        id: {
-          [Op.in]: authors,
-        },
-      },
-    });
+    const data = await this.authorRepository.findByIds(authors);
 
     if (!data || data.length == 0) {
       return Result.err(new NotFoundException('Authors does not exists'));

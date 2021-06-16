@@ -1,6 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { Op } from 'sequelize';
-import { AUTHOR_REPOSITORY } from 'src/core/constants';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Like, Repository } from 'typeorm';
 import { Author } from './author.entity';
 import {
   CreateAuthorRequest,
@@ -11,29 +11,31 @@ import { GetAuthorsRequest, GetAutorsResponse } from './dto/get-authors.dto';
 @Injectable()
 export class AuthorService {
   constructor(
-    @Inject(AUTHOR_REPOSITORY) private readonly authorRepository: typeof Author,
+    @InjectRepository(Author)
+    private readonly authorRepository: Repository<Author>,
   ) {}
 
   async getAll(dto: GetAuthorsRequest): Promise<GetAutorsResponse[]> {
     const where = {};
 
     if (dto.name) {
-      where['name'] = {
-        [Op.like]: '%' + dto.name + '%',
-      };
+      where['name'] = Like('%' + dto.name + '%');
     }
 
-    const data = await this.authorRepository.findAndCountAll({
+    const data = await this.authorRepository.findAndCount({
       where: where,
-      limit: dto.limit,
-      offset: dto.offset,
+      take: dto.limit,
+      skip: dto.offset,
     });
 
-    return data.rows.map((x) => new GetAutorsResponse(x.name));
+    return data[0].map((x) => new GetAutorsResponse(x.name));
   }
 
   async create(req: CreateAuthorRequest): Promise<CreateAuthorResponse> {
-    const data = await this.authorRepository.create<Author>({ name: req.name });
-    return new CreateAuthorResponse(data.name);
+    const author = new Author();
+    author.name = req.name;
+
+    this.authorRepository.save(author);
+    return new CreateAuthorResponse(author.name);
   }
 }

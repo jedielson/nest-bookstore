@@ -1,32 +1,38 @@
 import {
-  Table,
   Column,
-  Model,
-  DataType,
-  BelongsToMany,
-} from 'sequelize-typescript';
-import { Author, BookAuthor } from '../author/author.entity';
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Author } from '../author/author.entity';
 
-@Table
-export class Book extends Model {
+@Entity()
+export class Book {
+  @PrimaryGeneratedColumn()
+  id: number;
+
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
+    type: 'varchar',
+    nullable: false,
+    length: 200,
   })
   name: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
+    type: 'varchar',
+    nullable: false,
+    length: 10,
   })
   edition: string;
 
   @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
+    type: 'int',
+    nullable: false,
   })
   publicationYear: number;
 
-  @BelongsToMany(() => Author, () => BookAuthor)
+  @ManyToMany(() => Author)
+  @JoinTable()
   authors: Author[];
 }

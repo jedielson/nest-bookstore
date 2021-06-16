@@ -1,32 +1,18 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  ForeignKey,
-  BelongsToMany,
-} from 'sequelize-typescript';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Book } from '../book/book.entity';
 
-@Table
-export class Author extends Model {
+@Entity()
+export class Author {
+  @PrimaryGeneratedColumn()
+  id: number;
+
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
+    type: 'varchar',
+    nullable: false,
+    length: 200,
   })
   name: string;
 
-  @BelongsToMany(() => Book, () => BookAuthor)
+  @ManyToMany(() => Book)
   books: Book[];
-}
-
-@Table
-export class BookAuthor extends Model {
-  @ForeignKey(() => Book)
-  @Column
-  bookId: number;
-
-  @ForeignKey(() => Author)
-  @Column
-  authorId: number;
 }
