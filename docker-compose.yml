@@ -54,6 +54,9 @@ services:
         - "8001:80"
     networks: 
         - jedinetwork
+    volumes: 
+        - ./deployments/local/pg-admin/servers/servers.json:/pgadmin4/servers.json
+        - ./deployments/local/pg-admin/lib:/var/lib/pgadmin
     labels:
         - "traefik.enable=true"
         # - "traefik.tcp.routers.pgadmin.rule=Host(`pgadmin.localhost`)"
