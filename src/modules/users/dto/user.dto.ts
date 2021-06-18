@@ -3,19 +3,33 @@ import { Gender } from '../user.entity';
 
 export class UserDto {
   @IsNotEmpty()
-  readonly name: string;
+  name: string;
 
   @IsNotEmpty()
   @IsEmail()
-  readonly email: string;
+  email: string;
 
   @IsNotEmpty()
   @MinLength(6)
-  readonly password: string;
+  password: string;
 
   @IsNotEmpty()
   @IsEnum(Gender, {
     message: 'gender must be either male or female',
   })
-  readonly gender: Gender;
+  gender: Gender;
+}
+
+export interface LoginDto {
+  user: string;
+}
+
+export interface CreateUserDto {
+  name: string;
+  email: string;
+}
+
+export interface CreateUserResponse {
+  user: CreateUserDto;
+  token: string;
 }

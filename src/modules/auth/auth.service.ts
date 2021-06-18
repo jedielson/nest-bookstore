@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { UserDto } from '../users/dto/user.dto';
+import { CreateUserResponse, UserDto } from '../users/dto/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -11,47 +11,52 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, pass: string) {
+  async validateUser(username: string, pass: string): Promise<boolean> {
     // find if user exist with this email
     const user = await this.userService.findOneByEmail(username);
     if (!user) {
-      return null;
+      return false;
     }
 
     // find if user password match
     const match = await this.comparePassword(pass, user.password);
     if (!match) {
-      return null;
+      return false;
     }
 
-    // tslint:disable-next-line: no-string-literal
-    const { password, ...result } = user['dataValues'];
-    return result;
+    return true;
   }
 
-  public async login(user) {
+  public async login(user: string): Promise<string> {
     const token = await this.generateToken(user);
-    return { user, token };
+    if (!token) {
+      throw new UnauthorizedException();
+    }
+
+    return token;
   }
 
-  public async create(user: UserDto) {
+  public async create(user: UserDto): Promise<CreateUserResponse> {
     // hash the password
     const pass = await this.hashPassword(user.password);
 
     // create the user
     const newUser = await this.userService.create({ ...user, password: pass });
 
-    // tslint:disable-next-line: no-string-literal
-    const { password, ...result } = newUser['dataValues'];
-
     // generate token
-    const token = await this.generateToken(result);
+    const token = await this.generateToken(newUser.password);
 
     // return the user and the token
-    return { user: result, token };
+    return {
+      user: {
+        name: newUser.name,
+        email: newUser.email,
+      },
+      token,
+    };
   }
 
-  private async generateToken(user) {
+  private async generateToken(user: string): Promise<string> {
     const token = await this.jwtService.signAsync(user);
     return token;
   }
