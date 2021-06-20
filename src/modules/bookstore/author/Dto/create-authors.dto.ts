@@ -5,6 +5,6 @@ export class CreateAuthorRequest {
   name: string;
 }
 
-export class CreateAuthorResponse {
-  constructor(readonly name: string) {}
+export interface CreateAuthorResponse {
+  name: string;
 }

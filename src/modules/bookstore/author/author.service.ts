@@ -28,7 +28,9 @@ export class AuthorService {
       skip: dto.offset,
     });
 
-    return data[0].map((x) => new GetAutorsResponse(x.name));
+    return data[0].map((x) => {
+      return { name: x.name };
+    });
   }
 
   async create(req: CreateAuthorRequest): Promise<CreateAuthorResponse> {
@@ -36,6 +38,6 @@ export class AuthorService {
     author.name = req.name;
 
     this.authorRepository.save(author);
-    return new CreateAuthorResponse(author.name);
+    return { name: author.name };
   }
 }

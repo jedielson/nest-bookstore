@@ -10,6 +10,6 @@ export class GetAuthorsRequest {
   limit: number;
 }
 
-export class GetAutorsResponse {
-  constructor(readonly name?: string) {}
+export interface GetAutorsResponse {
+  name?: string;
 }
