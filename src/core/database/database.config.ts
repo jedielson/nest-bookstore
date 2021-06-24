@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import * as dotenv from 'dotenv';
 import { Author } from 'src/modules/bookstore/author/author.entity';
 import { Book } from 'src/modules/bookstore/book/book.entity';

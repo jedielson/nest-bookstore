@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Module } from '@nestjs/common';
 import { AuthorController } from './author/author.controller';
 import { BookController } from './book/book.controller';
