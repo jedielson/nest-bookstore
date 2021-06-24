@@ -51,7 +51,7 @@ export class BookService {
   }
 
   async update(req: UpdateBookRequest): Promise<UpdateBookResponse> {
-    const book = await this.bookRepository.findOne(req.id);
+    let book = await this.bookRepository.findOne(req.id);
 
     const authorExists = await this.bookRules.authorsMustExist(req.author);
     const author = authorExists.unwrap();
@@ -61,12 +61,10 @@ export class BookService {
     book.name = book.name;
     book.authors = author;
 
-    const lol = await this.bookRepository.save(book);
-
-    console.log(lol);
+    book = await this.bookRepository.save(book);
 
     return {
-      id: req.id,
+      id: book.id,
       edition: book.edition,
       name: book.name,
       publicationYear: book.publicationYear,
