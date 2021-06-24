@@ -1,73 +1,75 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# Bookstore
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Specification
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+You should implement an application for a library to store book and authors data.
 
-## Description
+**This application must provide an HTTP REST API to attend the requirements.**
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 1. Receive a CSV with authors and import to database
 
-## Installation
+Given a CSV file with many authors (more than a million), you need to build a command to import the data into the database. The CSV file will have the following format:
 
-```bash
-$ npm install
+```
+name
+Luciano Ramalho
+Osvaldo Santana Neto
+David Beazley
+Chetan Giridhar
+Brian K. Jones
+J.K Rowling
 ```
 
-## Running the app
+Each author record in the database must have the following fields:
 
-```bash
-# development
-$ npm run start
+* id (self-generated)
+* name
 
-# watch mode
-$ npm run start:dev
+You need to store the authors' data to complement the book data that will be stored afterward (see item #3).
 
-# production mode
-$ npm run start:prod
+_Extra tip: If you use Django Framework you can do something like this..._
+
+```
+python manage.py import_authors authors.csv
 ```
 
-## Test
+### 2. Expose authors' data in an endpoint
 
-```bash
-# unit tests
-$ npm run test
+This endpoint needs to return a paginated list with the authors' data. Optionally the authors can be searched by name.
 
-# e2e tests
-$ npm run test:e2e
+### 3. CRUD (Create, Read, Update and Delete) of books
 
-# test coverage
-$ npm run test:cov
+You need to implement these actions in your API:
+
+* Create a book
+* Read book's data
+* Update book's data
+* Delete book's data
+
+Each book record has the fields:
+
+* id (self-generated)
+* name
+* edition
+* publication_year
+* authors (more than one author can write a book)
+
+To retrieve a book (in easy mode) we can filter by 4 fields (or a composition of these four):
+
+* name
+* publication_year
+* edition
+* author
+
+But these 4 filters are optional. It must be possible to navigate all the books' data without any filter.
+
+To create a book you need to send this payload (in json format) below:
+
 ```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+{
+ "name": // Name of the book;
+ "edition": // Edition number;
+ "publication_year": // Publication year of the book;
+ "authors": // List of author ids, same ids of previous imported data
+}
+```
