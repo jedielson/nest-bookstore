@@ -8,8 +8,8 @@ export class AuthorController {
   constructor(private authService: AuthorService) {}
 
   @Get()
-  getAll(@Query() req: GetAuthorsRequest) {
-    return this.authService.getAll(req);
+  getAll(@Query() body: GetAuthorsRequest) {
+    return this.authService.getAll(body);
   }
 
   @Post()
