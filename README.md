@@ -73,3 +73,18 @@ To create a book you need to send this payload (in json format) below:
  "authors": // List of author ids, same ids of previous imported data
 }
 ```
+
+### Working with migrations
+
+- Creating a new migration: 
+```
+yarn db:generate <name of migration>
+```
+- Running migrations: 
+```
+yarn db:migrate
+```
+- Inspecting migrations
+```
+yarn db:inspect
+```
