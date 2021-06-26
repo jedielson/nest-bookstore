@@ -1,29 +1,33 @@
 /* istanbul ignore file */
 
-import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
-import { DEVELOPMENT, TEST, PRODUCTION } from '../constants';
-import { databaseConfig } from './database.config';
-export class TypeOrmConfigService implements TypeOrmOptionsFactory {
-  createTypeOrmOptions(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    connectionName?: string,
-  ): TypeOrmModuleOptions | Promise<TypeOrmModuleOptions> {
-    let config;
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import {
+  TypeOrmModuleAsyncOptions,
+  TypeOrmModuleOptions,
+} from '@nestjs/typeorm';
 
-    switch (process.env.NODE_ENV) {
-      case DEVELOPMENT:
-        config = databaseConfig.development;
-        break;
-      case TEST:
-        config = databaseConfig.test;
-        break;
-      case PRODUCTION:
-        config = databaseConfig.production;
-        break;
-      default:
-        config = databaseConfig.development;
-    }
-
-    return config;
+export default class TypeOrmConfig {
+  static createTypeOrmOptions(
+    configService: ConfigService,
+  ): TypeOrmModuleOptions {
+    return {
+      type: 'postgres',
+      host: configService.get<string>('TYPEORM_HOST'),
+      port: +configService.get<number>('TYPEORM_PORT'),
+      username: configService.get<string>('TYPEORM_USERNAME'),
+      password: configService.get<string>('TYPEORM_PASSWORD'),
+      database: configService.get<string>('TYPEORM_DATABASE'),
+      synchronize: false,
+      entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
+      logging: 'all',
+    };
   }
 }
+export const typeOrmConfigAsync: TypeOrmModuleAsyncOptions = {
+  imports: [ConfigModule],
+  useFactory: async (
+    configService: ConfigService,
+  ): Promise<TypeOrmModuleOptions> =>
+    TypeOrmConfig.createTypeOrmOptions(configService),
+  inject: [ConfigService],
+};
