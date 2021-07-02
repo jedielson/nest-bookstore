@@ -88,3 +88,7 @@ yarn db:migrate
 ```
 yarn db:inspect
 ```
+
+### TODOS
+
+* [ ] Make 201 responses return Location header
