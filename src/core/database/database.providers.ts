@@ -5,6 +5,7 @@ import {
   TypeOrmModuleAsyncOptions,
   TypeOrmModuleOptions,
 } from '@nestjs/typeorm';
+import { LoggerOptions } from 'typeorm';
 
 export default class TypeOrmConfig {
   static createTypeOrmOptions(
@@ -19,7 +20,7 @@ export default class TypeOrmConfig {
       database: configService.get<string>('TYPEORM_DATABASE'),
       synchronize: false,
       entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
-      //logging: 'all',
+      logging: configService.get<LoggerOptions>('TYPEORM_LOGGING'),
     };
   }
 }
