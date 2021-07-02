@@ -32,6 +32,7 @@ describe('AuthorController', () => {
 
     createAuthorResponseFactory =
       Factory.Sync.makeFactory<CreateAuthorResponse>({
+        id: 0,
         name: '',
       });
   });

@@ -19,7 +19,7 @@ export default class TypeOrmConfig {
       database: configService.get<string>('TYPEORM_DATABASE'),
       synchronize: false,
       entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
-      logging: 'all',
+      //logging: 'all',
     };
   }
 }

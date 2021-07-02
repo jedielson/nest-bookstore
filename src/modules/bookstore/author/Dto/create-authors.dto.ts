@@ -6,5 +6,6 @@ export class CreateAuthorRequest {
 }
 
 export interface CreateAuthorResponse {
+  id: number;
   name: string;
 }

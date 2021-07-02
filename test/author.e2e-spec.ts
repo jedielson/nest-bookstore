@@ -16,24 +16,22 @@ describe('AuthorsController (e2e)', () => {
     await app.init();
   });
 
-  // describe('/authors (POST)', () => {
+  describe('/authors (POST)', () => {
+    it('should create an author', async () => {
+      // arrange
+      const body = new CreateAuthorRequest();
+      body.name = 'Ronaldo';
 
-  // });
-
-  it('should create an author', async () => {
-    // arrange
-    const body = new CreateAuthorRequest();
-    body.name = 'Ronaldo';
-
-    // act & assert
-    await request(app.getHttpServer())
-      .post('/author')
-      .send(body)
-      .expect(function (res) {
-        expect(1).toEqual(1);
-        console.log(res.headers);
-      })
-      .expect(201);
+      // act & assert
+      request(app.getHttpServer())
+        .post('/author')
+        .send(body)
+        .expect(201)
+        .end(function (err, res) {
+          expect(res.body.id).toBeGreaterThan(0);
+          expect(res.body.name).toBe(body.name);
+        });
+    });
   });
 
   it('/ (GET)', async () => {

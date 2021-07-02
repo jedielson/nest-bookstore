@@ -34,10 +34,13 @@ export class AuthorService {
   }
 
   async create(req: CreateAuthorRequest): Promise<CreateAuthorResponse> {
-    const author = new Author();
+    let author = new Author();
     author.name = req.name;
 
-    this.authorRepository.save(author);
-    return { name: author.name };
+    author = await this.authorRepository.save(author);
+    return {
+      id: author.id,
+      name: author.name,
+    };
   }
 }

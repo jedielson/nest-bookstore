@@ -87,10 +87,14 @@ describe('AuthorService', () => {
   it('create should return the author', async () => {
     // arrange
     const request = createAuthorRequestFactory.build();
-    jest.spyOn(mockRepository, 'save').mockResolvedValueOnce(new Author());
+    const author = new Author();
+    author.id = 1;
+    author.name = request.name;
+    jest.spyOn(mockRepository, 'save').mockResolvedValueOnce(author);
 
     // act & assert
     await expect(service.create(request)).resolves.toStrictEqual({
+      id: 1,
       name: request.name,
     });
   });
