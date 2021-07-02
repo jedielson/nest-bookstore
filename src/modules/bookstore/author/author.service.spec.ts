@@ -77,6 +77,7 @@ describe('AuthorService', () => {
     // assert
     const expected = authors.map<GetAutorsResponse>((x) => {
       const a: GetAutorsResponse = {
+        id: x.id,
         name: x.name,
       };
       return a;

@@ -11,5 +11,6 @@ export class GetAuthorsRequest {
 }
 
 export interface GetAutorsResponse {
+  id?: number;
   name?: string;
 }

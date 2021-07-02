@@ -29,7 +29,7 @@ export class AuthorService {
     });
 
     return data[0].map((x) => {
-      return { name: x.name };
+      return { id: x.id, name: x.name };
     });
   }
 
