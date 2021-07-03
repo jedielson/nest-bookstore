@@ -36,7 +36,7 @@ export class BookService {
     const authorExists = await this.bookRules.authorsMustExist(req.author);
     const author = authorExists.unwrap();
 
-    const data = await this.bookRepository.create({
+    const data = await this.bookRepository.save({
       name: req.name,
       edition: req.edition,
       publicationYear: req.publicationYear,
@@ -44,6 +44,7 @@ export class BookService {
     });
 
     return {
+      id: data.id,
       name: data.name,
       edition: data.edition,
       publicationYear: data.publicationYear,

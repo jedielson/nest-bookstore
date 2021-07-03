@@ -144,7 +144,7 @@ describe('BookService', () => {
     book.name = request.name;
     book.publicationYear = request.publicationYear;
 
-    bookRepository.create = jest.fn().mockResolvedValueOnce(book);
+    bookRepository.save = jest.fn().mockResolvedValueOnce(book);
     const result = Result.ok(new Array<Author>());
 
     rules.authorsMustExist = jest.fn().mockResolvedValueOnce(result);
@@ -154,7 +154,7 @@ describe('BookService', () => {
 
     // assert
     expect(rules.authorsMustExist).toBeCalledTimes(1);
-    expect(bookRepository.create).toBeCalledTimes(1);
+    expect(bookRepository.save).toBeCalledTimes(1);
   });
 
   it('create should return data correctly', async () => {
@@ -171,17 +171,19 @@ describe('BookService', () => {
       });
     const request = await createBooksRequestFactory.build();
     const response: CreateBookResponse = {
+      id: 1,
       edition: request.edition,
       name: request.name,
       publicationYear: request.publicationYear,
     };
 
     const book = new Book();
+    book.id = 1;
     book.edition = request.edition;
     book.name = request.name;
     book.publicationYear = request.publicationYear;
 
-    bookRepository.create = jest.fn().mockResolvedValueOnce(book);
+    bookRepository.save = jest.fn().mockResolvedValueOnce(book);
     const result = Result.ok(new Array<Author>());
 
     rules.authorsMustExist = jest.fn().mockResolvedValueOnce(result);

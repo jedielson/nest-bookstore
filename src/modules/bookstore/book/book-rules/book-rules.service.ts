@@ -28,7 +28,9 @@ export class BookRulesService {
     }
 
     if (data.length != authors.length) {
-      return Result.err(new UnprocessableEntityException());
+      return Result.err(
+        new UnprocessableEntityException('Not all authors were found'),
+      );
     }
 
     return Result.ok(data);

@@ -32,21 +32,23 @@ export class CreateBookRequestBuilder
   }
 
   withAsyncTransform(): CreateBookRequestBuilder {
-    this.transformFactory = this.asyncFactory.transform(this.transformDto);
+    this.setAuthors();
+
+    this.transformFactory = this.asyncFactory.transform(
+      (x: CreateBookRequest) => {
+        x.name = Faker.name.findName();
+        x.publicationYear = Faker.date.past().getFullYear();
+        x.edition = Faker.datatype.string(10);
+        x.author = this.authors;
+        return x;
+      },
+    );
     return this;
   }
 
-  private transformDto(x: CreateBookRequest): CreateBookRequest {
-    x.name = Faker.name.findName();
-    x.publicationYear = Faker.date.past().getFullYear();
-    x.edition = Faker.datatype.string(10);
-    x.author = this.getAuthor();
-    return x;
-  }
-
-  private getAuthor(): number[] {
+  private setAuthors(): void {
     if (this.authors && this.authors.length > 0) {
-      return this.authors;
+      return;
     }
 
     const length = Faker.datatype.number(10);
@@ -54,8 +56,6 @@ export class CreateBookRequestBuilder
     for (let i = 0; i < length; i++) {
       this.authors.push(Faker.datatype.number(100));
     }
-
-    return this.authors;
   }
 
   withAuthors(authors: number[]): CreateBookRequestBuilder {

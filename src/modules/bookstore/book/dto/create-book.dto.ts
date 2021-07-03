@@ -10,6 +10,7 @@ export class CreateBookRequest {
 }
 
 export interface CreateBookResponse {
+  id: number;
   name: string;
   edition: string;
   publicationYear: number;
