@@ -2,20 +2,46 @@ import * as Factory from 'factory.ts';
 import * as Faker from 'faker';
 import { CreateAuthorRequest } from '../../modules/bookstore/author/dto/create-authors.dto';
 
-export class AuthorBuilder {
-  buildCreateAuthorRequest(): Factory.Async.TransformFactory<
+export class CreateAuthorRequestBuilder {
+  private asyncFactory: Factory.Async.Factory<CreateAuthorRequest, 'name'>;
+  private transformFactory: Factory.Async.TransformFactory<
     CreateAuthorRequest,
     'name',
     CreateAuthorRequest
-  > {
-    return Factory.Async.makeFactory<CreateAuthorRequest>({
-      name: '',
-    }).transform((a: CreateAuthorRequest) => {
-      a.name = Faker.name.findName(
-        Faker.name.firstName(),
-        Faker.name.lastName(),
-      );
-      return a;
-    });
+  >;
+
+  withDefaultConfigs(): CreateAuthorRequestBuilder {
+    this.withAsyncFactory().withAsyncTransform();
+    return this;
+  }
+
+  withAsyncFactory(): CreateAuthorRequestBuilder {
+    this.asyncFactory = Factory.Async.makeFactory<CreateAuthorRequest>(
+      new CreateAuthorRequest(),
+    );
+
+    return this;
+  }
+
+  withAsyncTransform(): CreateAuthorRequestBuilder {
+    this.transformFactory = this.asyncFactory.transform(
+      (a: CreateAuthorRequest) => {
+        a.name = Faker.name.findName(
+          Faker.name.firstName(),
+          Faker.name.lastName(),
+        );
+        return a;
+      },
+    );
+
+    return this;
+  }
+
+  build(): Promise<CreateAuthorRequest> {
+    return this.transformFactory.build();
+  }
+
+  buildList(length: number): Promise<CreateAuthorRequest[]> {
+    return this.transformFactory.buildList(length);
   }
 }

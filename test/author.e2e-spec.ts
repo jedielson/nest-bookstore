@@ -3,7 +3,7 @@ import { matchers } from 'jest-json-schema';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { AuthorBuilder } from '../src/utils/test/author.spec.builders';
+import { CreateAuthorRequestBuilder } from '../src/utils/test/author.spec.builders';
 
 describe('AuthorsController (e2e)', () => {
   let app: INestApplication;
@@ -21,8 +21,9 @@ describe('AuthorsController (e2e)', () => {
   describe('/authors (POST)', () => {
     it('should create an author', async () => {
       // arrange
-      const builder = new AuthorBuilder();
-      const body = await builder.buildCreateAuthorRequest().build();
+      const body = await new CreateAuthorRequestBuilder()
+        .withDefaultConfigs()
+        .build();
 
       // act & assert
       await request(app.getHttpServer())
@@ -38,8 +39,9 @@ describe('AuthorsController (e2e)', () => {
 
   describe('/authors (GET)', () => {
     beforeAll(async () => {
-      const builder = new AuthorBuilder();
-      const body = await builder.buildCreateAuthorRequest().buildList(11);
+      const body = await new CreateAuthorRequestBuilder()
+        .withDefaultConfigs()
+        .buildList(11);
 
       const size = body.length;
       for (let index = 0; index < size; index++) {
