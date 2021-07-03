@@ -3,7 +3,7 @@ import { matchers } from 'jest-json-schema';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { CreateAuthorRequestBuilder } from '../src/utils/test/author.spec.builders';
+import { CreateAuthorRequestBuilder } from '../src/utils/test/author.spec-builders';
 
 describe('AuthorsController (e2e)', () => {
   let app: INestApplication;
