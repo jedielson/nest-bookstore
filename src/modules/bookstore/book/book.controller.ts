@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -39,6 +40,7 @@ export class BookController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   delete(@Param('id') id: number) {
     return this.bookService.delete(id);
   }

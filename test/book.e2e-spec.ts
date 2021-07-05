@@ -269,6 +269,59 @@ describe('BooksController (e2e)', () => {
     });
   });
 
+  describe('/book/id (DELETE)', () => {
+    it('should return 404 if book does not exists', async () => {
+      // arrange
+      const id = Faker.datatype.number({ min: 10000, max: 100000 });
+
+      // act & assert
+      await request(app.getHttpServer()).delete(`/book/${id}`).expect(404);
+    });
+
+    it('should return 200 if book exists', async () => {
+      // arrange
+      const authors = await createAuthors();
+      const body = await new CreateBookRequestBuilder()
+        .withAuthors(authors)
+        .build();
+
+      let id = 0;
+      await request(app.getHttpServer())
+        .post('/book')
+        .send(body)
+        .expect(201)
+        .expect((res) => {
+          id = res.body.id;
+        });
+
+      // act & assert
+      await request(app.getHttpServer()).delete(`/book/${id}`).expect(204);
+    });
+
+    it('should delete', async () => {
+      // arrange
+      const authors = await createAuthors();
+      const body = await new CreateBookRequestBuilder()
+        .withAuthors(authors)
+        .build();
+
+      let id = 0;
+      await request(app.getHttpServer())
+        .post('/book')
+        .send(body)
+        .expect(201)
+        .expect((res) => {
+          id = res.body.id;
+        });
+
+      // act
+      await request(app.getHttpServer()).delete(`/book/${id}`).expect(204);
+
+      // assert
+      await request(app.getHttpServer()).get(`/book/${id}`).expect(404);
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
