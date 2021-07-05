@@ -18,3 +18,10 @@ export interface GetBooksResponse {
   edition: string;
   publicationYear: number;
 }
+
+export interface GetBookResponse {
+  id: number;
+  name: string;
+  edition: string;
+  publicationYear: number;
+}

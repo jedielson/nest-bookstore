@@ -22,6 +22,11 @@ export class BookController {
     return this.bookService.getAll(req);
   }
 
+  @Get(':id')
+  getOne(@Param('id') id: number) {
+    return this.bookService.getOne(id);
+  }
+
   @Post()
   create(@Body() req: CreateBookRequest) {
     return this.bookService.create(req);

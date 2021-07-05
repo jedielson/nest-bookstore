@@ -5,7 +5,11 @@ import { Author } from '../author/author.entity';
 import { BookRulesService } from './book-rules/book-rules.service';
 import { Book } from './book.entity';
 import { CreateBookRequest, CreateBookResponse } from './dto/create-book.dto';
-import { GetBooksRequest, GetBooksResponse } from './dto/get-books.dto';
+import {
+  GetBookResponse,
+  GetBooksRequest,
+  GetBooksResponse,
+} from './dto/get-books.dto';
 import { UpdateBookRequest, UpdateBookResponse } from './dto/update-book.dto';
 
 @Injectable()
@@ -30,6 +34,21 @@ export class BookService {
         publicationYear: x.publicationYear,
       };
     });
+  }
+
+  async getOne(id: number): Promise<GetBookResponse> {
+    const data = await this.bookRepository.findOne(id);
+
+    if (!data) {
+      throw new NotFoundException();
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      edition: data.edition,
+      publicationYear: data.publicationYear,
+    };
   }
 
   async create(req: CreateBookRequest): Promise<CreateBookResponse> {

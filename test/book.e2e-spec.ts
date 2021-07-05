@@ -19,28 +19,28 @@ describe('BooksController (e2e)', () => {
     await app.init();
   });
 
+  const createAuthors = async (): Promise<number[]> => {
+    const countAuthors = Faker.datatype.number({ min: 3, max: 5 });
+    const authorsRequests = await new CreateAuthorRequestBuilder()
+      .withDefaultConfigs()
+      .buildList(countAuthors);
+
+    const authors: number[] = [];
+
+    for (let i = 0; i < countAuthors; i++) {
+      await request(app.getHttpServer())
+        .post('/author')
+        .send(authorsRequests[i])
+        .expect(201)
+        .expect((res) => {
+          if (res.statusCode === 201) authors.push(res.body.id);
+        });
+    }
+
+    return authors;
+  };
+
   describe('/books (POST)', () => {
-    const createAuthors = async (): Promise<number[]> => {
-      const countAuthors = Faker.datatype.number({ min: 3, max: 5 });
-      const authorsRequests = await new CreateAuthorRequestBuilder()
-        .withDefaultConfigs()
-        .buildList(countAuthors);
-
-      const authors: number[] = [];
-
-      for (let i = 0; i < countAuthors; i++) {
-        await request(app.getHttpServer())
-          .post('/author')
-          .send(authorsRequests[i])
-          .expect(201)
-          .expect((res) => {
-            if (res.statusCode === 201) authors.push(res.body.id);
-          });
-      }
-
-      return authors;
-    };
-
     it('should create a book', async () => {
       // arrange
       const authors = await createAuthors();
@@ -134,6 +134,135 @@ describe('BooksController (e2e)', () => {
           console.log(res.body);
         })
         .expect(201)
+        .expect((res) => {
+          expect(res.body).toMatchSchema(schema);
+        });
+    });
+  });
+
+  describe('/books (GET)', () => {
+    it('should paginate', async () => {
+      // arrange
+      const authors = await createAuthors();
+      const booksRequests = await new CreateBookRequestBuilder()
+        .withAuthors(authors)
+        .buildList(11);
+
+      for (let i = 0; i < 11; i++) {
+        await request(app.getHttpServer())
+          .post('/book')
+          .send(booksRequests[i])
+          .expect(201);
+      }
+
+      // act & assert
+      await request(app.getHttpServer())
+        .get('/book?limit=10')
+        .expect(200)
+        .expect(function (res) {
+          expect(res.body.length).toBeGreaterThanOrEqual(10);
+        });
+    });
+
+    it('should return schema', async () => {
+      // arrange
+      const schema = {
+        type: 'array',
+        items: [
+          {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'integer',
+              },
+              name: {
+                type: 'string',
+              },
+            },
+            required: ['id', 'name'],
+          },
+        ],
+      };
+
+      // act & assert
+      await request(app.getHttpServer())
+        .get('/book?limit=10')
+        .expect(200)
+        .expect(function (res) {
+          expect(res.body).toMatchSchema(schema);
+        });
+    });
+  });
+
+  describe('/book/id (GET)', () => {
+    it('should return created book', async () => {
+      // arrange
+      const authors = await createAuthors();
+      const body = await new CreateBookRequestBuilder()
+        .withAuthors(authors)
+        .build();
+
+      let id = 0;
+
+      await request(app.getHttpServer())
+        .post('/book')
+        .send(body)
+        .expect(201)
+        .expect((res) => {
+          id = res.body.id;
+        });
+
+      // act & assert
+      await request(app.getHttpServer()).get(`/book/${id}`).expect(200);
+    });
+
+    it('if not exists should return 404', async () => {
+      // arrange
+      const id = Faker.datatype.number({ min: 10000, max: 100000 });
+
+      // act & assert
+      await request(app.getHttpServer()).get(`/book/${id}`).expect(404);
+    });
+
+    it('should return schema', async () => {
+      // arrange
+      const schema = {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+          },
+          name: {
+            type: 'string',
+          },
+          edition: {
+            type: 'string',
+          },
+          publicationYear: {
+            type: 'integer',
+          },
+        },
+        required: ['id', 'name', 'edition', 'publicationYear'],
+      };
+      const authors = await createAuthors();
+      const body = await new CreateBookRequestBuilder()
+        .withAuthors(authors)
+        .build();
+
+      let id = 0;
+
+      await request(app.getHttpServer())
+        .post('/book')
+        .send(body)
+        .expect(201)
+        .expect((res) => {
+          id = res.body.id;
+        });
+
+      // act & assert
+      await request(app.getHttpServer())
+        .get(`/book/${id}`)
+        .expect(200)
         .expect((res) => {
           expect(res.body).toMatchSchema(schema);
         });

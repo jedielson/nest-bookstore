@@ -64,10 +64,12 @@ export class CreateBookRequestBuilder
   }
 
   build(): Promise<CreateBookRequest> {
+    this.withDefaultConfigs();
     return this.transformFactory.build();
   }
 
   buildList(length: number): Promise<CreateBookRequest[]> {
+    this.withDefaultConfigs();
     return this.transformFactory.buildList(length);
   }
 }

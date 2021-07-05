@@ -54,6 +54,23 @@ describe('BookController', () => {
     expect(service.getAll).toBeCalledTimes(1);
   });
 
+  it('get one should return', async () => {
+    // arrange
+    const id = Faker.datatype.number();
+    service.getOne = jest.fn().mockResolvedValueOnce({
+      id: id,
+      name: Faker.name.findName(),
+      edition: Faker.hacker.abbreviation(),
+      publicationYear: Faker.date.recent().getFullYear(),
+    });
+
+    // act
+    await controller.getOne(id);
+
+    //assert
+    expect(service.getOne).toBeCalledTimes(1);
+  });
+
   it('create book should call create', async () => {
     // arrange
     const createBooksRequestFactory =
@@ -61,6 +78,7 @@ describe('BookController', () => {
 
     const createBooksResponseFactory =
       Factory.Sync.makeFactory<CreateBookResponse>({
+        id: Faker.datatype.number(),
         edition: Faker.hacker.abbreviation(),
         name: Faker.name.findName(),
         publicationYear: 0,
