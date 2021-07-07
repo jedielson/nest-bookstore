@@ -92,3 +92,4 @@ yarn db:inspect
 ### TODOS
 
 * [ ] Make 201 responses return Location header
+* [ ] Make responses of books return authors

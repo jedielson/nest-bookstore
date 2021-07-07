@@ -5,7 +5,10 @@ import * as request from 'supertest';
 import * as Faker from 'faker';
 import { AppModule } from '../src/app.module';
 import { CreateAuthorRequestBuilder } from '../src/utils/test/author.spec-builders';
-import { CreateBookRequestBuilder } from '../src/utils/test/book.spec-builders';
+import {
+  CreateBookRequestBuilder,
+  UpdateBookRequestBuilder,
+} from '../src/utils/test/book.spec-builders';
 
 describe('BooksController (e2e)', () => {
   let app: INestApplication;
@@ -278,7 +281,7 @@ describe('BooksController (e2e)', () => {
       await request(app.getHttpServer()).delete(`/book/${id}`).expect(404);
     });
 
-    it('should return 200 if book exists', async () => {
+    it('should return 204 if book exists', async () => {
       // arrange
       const authors = await createAuthors();
       const body = await new CreateBookRequestBuilder()
@@ -319,6 +322,109 @@ describe('BooksController (e2e)', () => {
 
       // assert
       await request(app.getHttpServer()).get(`/book/${id}`).expect(404);
+    });
+  });
+
+  describe('/book/id (PATCH)', () => {
+    it('should return 404 if book not exists', async () => {
+      // arrange
+      const id = Faker.datatype.number({ min: 10000, max: 100000 });
+
+      // act & assert
+      await request(app.getHttpServer()).patch(`/book/${id}`).expect(404);
+    });
+
+    it('should update data', async () => {
+      // arrange
+      const authors = await createAuthors();
+      const postBody = await new CreateBookRequestBuilder()
+        .withAuthors(authors)
+        .build();
+
+      let id = 0;
+      const newAuthors = await createAuthors();
+
+      await request(app.getHttpServer())
+        .post('/book')
+        .send(postBody)
+        .expect(201)
+        .expect((res) => {
+          id = res.body.id;
+        });
+
+      const patchBody = await new UpdateBookRequestBuilder()
+        .withBookId(id)
+        .withAuthors(newAuthors)
+        .build();
+
+      // act
+      await request(app.getHttpServer())
+        .patch(`/book/${id}`)
+        .send(patchBody)
+        .expect((res) => {
+          if (res.statusCode !== 200) console.log(res.body);
+        })
+        .expect(200);
+
+      // assert
+      await request(app.getHttpServer())
+        .get(`/book/${id}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.id).toBe(id);
+          expect(res.body.name).toBe(patchBody.name);
+          expect(res.body.publicationYear).toBe(patchBody.publicationYear);
+          expect(res.body.edition).toBe(patchBody.edition);
+        });
+    });
+
+    it('should return schema', async () => {
+      // arrange
+      const schema = {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'integer',
+          },
+          name: {
+            type: 'string',
+          },
+          edition: {
+            type: 'string',
+          },
+          publicationYear: {
+            type: 'integer',
+          },
+        },
+        required: ['id', 'name', 'edition', 'publicationYear'],
+      };
+      const authors = await createAuthors();
+      const postBody = await new CreateBookRequestBuilder()
+        .withAuthors(authors)
+        .build();
+
+      let id = 0;
+      await request(app.getHttpServer())
+        .post('/book')
+        .send(postBody)
+        .expect(201)
+        .expect((res) => {
+          id = res.body.id;
+        });
+
+      const patchBody = await new UpdateBookRequestBuilder()
+        .withBookId(id)
+        .withAuthors(authors)
+        .build();
+
+      // act & assert
+      await request(app.getHttpServer())
+        .patch(`/book/${id}`)
+        .send(patchBody)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toMatchSchema(schema);
+        });
     });
   });
 

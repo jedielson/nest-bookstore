@@ -72,13 +72,16 @@ export class BookService {
 
   async update(req: UpdateBookRequest): Promise<UpdateBookResponse> {
     let book = await this.bookRepository.findOne(req.id);
+    if (!book) {
+      throw new NotFoundException();
+    }
 
     const authorExists = await this.bookRules.authorsMustExist(req.author);
     const author = authorExists.unwrap();
 
     book.publicationYear = req.publicationYear;
-    book.edition = book.edition;
-    book.name = book.name;
+    book.edition = req.edition;
+    book.name = req.name;
     book.authors = author;
 
     book = await this.bookRepository.save(book);

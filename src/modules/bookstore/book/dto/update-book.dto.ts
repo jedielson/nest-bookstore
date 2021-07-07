@@ -1,8 +1,6 @@
-import { PartialType } from '@nestjs/mapped-types';
 import { ArrayNotEmpty } from 'class-validator';
-import { CreateBookRequest } from './create-book.dto';
 
-export class UpdateBookRequest extends PartialType(CreateBookRequest) {
+export class UpdateBookRequest {
   id: number;
   name: string;
   edition: string;
