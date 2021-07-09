@@ -74,7 +74,9 @@ describe('AuthService', () => {
   it('login should throw error if could not generate token', async () => {
     // arrange
     jwtService.signAsync = jest.fn().mockResolvedValueOnce(undefined);
+    usersService.findOneByEmail = jest.fn().mockResolvedValueOnce(new User());
 
+    // act & assert
     await expect(service.login('somelogin')).rejects.toThrowError(
       UnauthorizedException,
     );
@@ -83,7 +85,9 @@ describe('AuthService', () => {
   it('login should return token', async () => {
     // arrange
     jwtService.signAsync = jest.fn().mockResolvedValueOnce('some string');
+    usersService.findOneByEmail = jest.fn().mockResolvedValueOnce(new User());
 
+    // act & assert
     await expect(service.login('somelogin')).resolves.toBe('some string');
   });
 

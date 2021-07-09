@@ -93,3 +93,4 @@ yarn db:inspect
 
 * [ ] Make 201 responses return Location header
 * [ ] Make responses of books return authors
+* [ ] Apply auth on every endpoint

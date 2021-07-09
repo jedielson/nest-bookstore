@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { CreateUserResponse, UserDto } from '../users/dto/user.dto';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +28,13 @@ export class AuthService {
     return true;
   }
 
-  public async login(user: string): Promise<string> {
+  public async login(username: string): Promise<string> {
+    const user = await this.userService.findOneByEmail(username);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
     const token = await this.generateToken(user);
     if (!token) {
       throw new UnauthorizedException();
@@ -44,7 +51,7 @@ export class AuthService {
     const newUser = await this.userService.create({ ...user, password: pass });
 
     // generate token
-    const token = await this.generateToken(newUser.password);
+    const token = await this.generateToken(newUser);
 
     // return the user and the token
     return {
@@ -56,8 +63,12 @@ export class AuthService {
     };
   }
 
-  private async generateToken(user: string): Promise<string> {
-    const token = await this.jwtService.signAsync(user);
+  private async generateToken(user: User): Promise<string> {
+    const token = await this.jwtService.signAsync({
+      name: user.name,
+      email: user.email,
+      gender: user.gender,
+    });
     return token;
   }
 

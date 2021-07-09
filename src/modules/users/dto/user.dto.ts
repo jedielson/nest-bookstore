@@ -20,8 +20,9 @@ export class UserDto {
   gender: Gender;
 }
 
-export interface LoginDto {
-  user: string;
+export class LoginDto {
+  username: string;
+  password: string;
 }
 
 export interface CreateUserDto {

@@ -33,13 +33,13 @@ describe('UsersService', () => {
   it('create should call create', async () => {
     // arrange
     const userDto = Factory.Sync.makeFactory<UserDto>(new UserDto()).build();
-    userRepository.create = jest.fn();
+    userRepository.save = jest.fn();
 
     // act
     await service.create(userDto);
 
     // assert
-    expect(userRepository.create).toBeCalledTimes(1);
+    expect(userRepository.save).toBeCalledTimes(1);
   });
 
   it('findOneByEmail should call findOne', async () => {
