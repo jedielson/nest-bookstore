@@ -25,15 +25,29 @@ describe('AuthorsController (e2e)', () => {
         .withDefaultConfigs()
         .build();
 
+      const url = app.getHttpServer().listen().address();
+      const baseUrl = 'http://127.0.0.1:' + url.port;
+      const pattern = new RegExp('^' + baseUrl + '/author/[0-9]+$', 'g');
+
+      let location = '';
+
       // act & assert
       await request(app.getHttpServer())
         .post('/author')
         .send(body)
         .expect(201)
         .expect(function (res) {
-          expect(res.body.id).toBeGreaterThan(0);
-          expect(res.body.name).toBe(body.name);
+          expect(res.body).toStrictEqual({});
+          expect(res.headers.location).toMatch(pattern);
+          location = res.headers.location.replace(baseUrl, '');
         });
+
+      await request(app.getHttpServer())
+        .get(location)
+        .expect((res) => {
+          expect(res.body.name).toBe(body.name);
+        })
+        .expect(200);
     });
   });
 

@@ -19,7 +19,7 @@ export class LocationInterceptor implements NestInterceptor {
   private setLocationHeader(x: any, context: ExecutionContext) {
     const res = context.switchToHttp().getResponse();
     if (!(res.req.method === 'POST' && res.statusCode === 201)) {
-      return null;
+      return x;
     }
 
     const urls = this.reflector.get<string[]>(

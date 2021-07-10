@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { AuthorService } from './author.service';
 import { CreateAuthorRequest } from './dto/create-authors.dto';
 import { GetAuthorsRequest } from './dto/get-authors.dto';
@@ -10,6 +10,11 @@ export class AuthorController {
   @Get()
   getAll(@Query() body: GetAuthorsRequest) {
     return this.authService.getAll(body);
+  }
+
+  @Get(':id')
+  get(@Param('id') id: number) {
+    return this.authService.find(id);
   }
 
   @Post()
