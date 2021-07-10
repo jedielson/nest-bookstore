@@ -6,6 +6,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { BookstoreModule } from './modules/bookstore/bookstore.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfigAsync } from './core/database/database.providers';
+import { LocationInterceptor } from './core/http/location.interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -14,6 +16,12 @@ import { typeOrmConfigAsync } from './core/database/database.providers';
     UsersModule,
     AuthModule,
     BookstoreModule,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LocationInterceptor,
+    },
   ],
 })
 export class AppModule {}
