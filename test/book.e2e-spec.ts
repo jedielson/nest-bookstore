@@ -12,6 +12,10 @@ import {
 
 describe('BooksController (e2e)', () => {
   let app: INestApplication;
+  let pattern: RegExp;
+  let port: number;
+  let baseUrl: string;
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -20,6 +24,11 @@ describe('BooksController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     expect.extend(matchers);
     await app.init();
+
+    const url = app.getHttpServer().listen().address();
+    port = url.port;
+    baseUrl = 'http://127.0.0.1:' + url.port;
+    pattern = new RegExp('^' + baseUrl + '/book/[0-9]+$', 'g');
   });
 
   const createAuthors = async (): Promise<number[]> => {
@@ -36,7 +45,11 @@ describe('BooksController (e2e)', () => {
         .send(authorsRequests[i])
         .expect(201)
         .expect((res) => {
-          if (res.statusCode === 201) authors.push(res.body.id);
+          if (res.statusCode === 201) {
+            const locationArr = res.headers.location.split('/');
+            const id = Number(locationArr[locationArr.length - 1]);
+            authors.push(id);
+          }
         });
     }
 
@@ -52,95 +65,29 @@ describe('BooksController (e2e)', () => {
         .withDefaultConfigs()
         .build();
 
+      let location = '';
+
       // act & assert
       await request(app.getHttpServer())
         .post('/book')
         .send(body)
+        .expect(201)
         .expect((res) => {
-          if (res.statusCode === 201) return;
+          expect(res.headers.location).toMatch(pattern);
+          location = res.headers.location.split(`${port}`)[1];
+        });
 
-          console.log(body);
-          console.log(res.body);
-        })
-        .expect(201);
+      await request(app.getHttpServer())
+        .get(location)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.name).toBe(body.name);
+          expect(res.body.publicationYear).toBe(body.publicationYear);
+          expect(res.body.edition).toBe(body.edition);
+        });
     });
 
     // should return 400 if author invalid
-    it('should return schema', async () => {
-      // arrange
-      const schema = {
-        $schema: 'http://json-schema.org/draft-07/schema',
-        $id: 'http://example.com/example.json',
-        type: 'object',
-        title: 'The root schema',
-        description: 'The root schema comprises the entire JSON document.',
-        default: {},
-        examples: [
-          {
-            id: 10,
-            name: 'Antonio Schinner PhD',
-            edition: '$E2XV6oFP0',
-            publicationYear: 2020,
-          },
-        ],
-        required: ['id', 'name', 'edition', 'publicationYear'],
-        properties: {
-          id: {
-            $id: '#/properties/id',
-            type: 'integer',
-            title: 'The id schema',
-            description: 'An explanation about the purpose of this instance.',
-            default: 0,
-            examples: [10],
-          },
-          name: {
-            $id: '#/properties/name',
-            type: 'string',
-            title: 'The name schema',
-            description: 'An explanation about the purpose of this instance.',
-            default: '',
-            examples: ['Antonio Schinner PhD'],
-          },
-          edition: {
-            $id: '#/properties/edition',
-            type: 'string',
-            title: 'The edition schema',
-            description: 'An explanation about the purpose of this instance.',
-            default: '',
-            examples: ['$E2XV6oFP0'],
-          },
-          publicationYear: {
-            $id: '#/properties/publicationYear',
-            type: 'integer',
-            title: 'The publicationYear schema',
-            description: 'An explanation about the purpose of this instance.',
-            default: 0,
-            examples: [2020],
-          },
-        },
-        additionalProperties: true,
-      };
-      const authors = await createAuthors();
-      const body = await new CreateBookRequestBuilder()
-        .withAuthors(authors)
-        .withDefaultConfigs()
-        .build();
-
-      // act & assert
-      await request(app.getHttpServer())
-        .post('/book')
-        .send(body)
-        .expect((res) => {
-          if (res.statusCode === 201) return;
-
-          console.log(body);
-          console.log(res.body);
-        })
-        .expect(201)
-        .expect((res) => {
-          expect(res.body).toMatchSchema(schema);
-        });
-    });
   });
 
   describe('/books (GET)', () => {
@@ -205,18 +152,17 @@ describe('BooksController (e2e)', () => {
         .withAuthors(authors)
         .build();
 
-      let id = 0;
-
+      let location = '';
       await request(app.getHttpServer())
         .post('/book')
         .send(body)
         .expect(201)
         .expect((res) => {
-          id = res.body.id;
+          location = res.headers.location.split(`${port}`)[1];
         });
 
       // act & assert
-      await request(app.getHttpServer()).get(`/book/${id}`).expect(200);
+      await request(app.getHttpServer()).get(location).expect(200);
     });
 
     it('if not exists should return 404', async () => {
@@ -252,19 +198,18 @@ describe('BooksController (e2e)', () => {
         .withAuthors(authors)
         .build();
 
-      let id = 0;
-
+      let location = '';
       await request(app.getHttpServer())
         .post('/book')
         .send(body)
         .expect(201)
         .expect((res) => {
-          id = res.body.id;
+          location = res.headers.location.split(`${port}`)[1];
         });
 
       // act & assert
       await request(app.getHttpServer())
-        .get(`/book/${id}`)
+        .get(location)
         .expect(200)
         .expect((res) => {
           expect(res.body).toMatchSchema(schema);
@@ -288,17 +233,17 @@ describe('BooksController (e2e)', () => {
         .withAuthors(authors)
         .build();
 
-      let id = 0;
+      let location = '';
       await request(app.getHttpServer())
         .post('/book')
         .send(body)
         .expect(201)
         .expect((res) => {
-          id = res.body.id;
+          location = res.headers.location.split(`${port}`)[1];
         });
 
       // act & assert
-      await request(app.getHttpServer()).delete(`/book/${id}`).expect(204);
+      await request(app.getHttpServer()).delete(location).expect(204);
     });
 
     it('should delete', async () => {
@@ -308,20 +253,20 @@ describe('BooksController (e2e)', () => {
         .withAuthors(authors)
         .build();
 
-      let id = 0;
+      let location = '';
       await request(app.getHttpServer())
         .post('/book')
         .send(body)
         .expect(201)
         .expect((res) => {
-          id = res.body.id;
+          location = res.headers.location.split(`${port}`)[1];
         });
 
       // act
-      await request(app.getHttpServer()).delete(`/book/${id}`).expect(204);
+      await request(app.getHttpServer()).delete(location).expect(204);
 
       // assert
-      await request(app.getHttpServer()).get(`/book/${id}`).expect(404);
+      await request(app.getHttpServer()).get(location).expect(404);
     });
   });
 
@@ -341,7 +286,7 @@ describe('BooksController (e2e)', () => {
         .withAuthors(authors)
         .build();
 
-      let id = 0;
+      let location = '';
       const newAuthors = await createAuthors();
 
       await request(app.getHttpServer())
@@ -349,8 +294,11 @@ describe('BooksController (e2e)', () => {
         .send(postBody)
         .expect(201)
         .expect((res) => {
-          id = res.body.id;
+          location = res.headers.location.split(`${port}`)[1];
         });
+
+      const chunks = location.split('/');
+      const id = Number(chunks[chunks.length - 1]);
 
       const patchBody = await new UpdateBookRequestBuilder()
         .withBookId(id)
@@ -359,7 +307,7 @@ describe('BooksController (e2e)', () => {
 
       // act
       await request(app.getHttpServer())
-        .patch(`/book/${id}`)
+        .patch(location)
         .send(patchBody)
         .expect((res) => {
           if (res.statusCode !== 200) console.log(res.body);
@@ -368,7 +316,7 @@ describe('BooksController (e2e)', () => {
 
       // assert
       await request(app.getHttpServer())
-        .get(`/book/${id}`)
+        .get(location)
         .expect(200)
         .expect((res) => {
           expect(res.body.id).toBe(id);
@@ -403,14 +351,17 @@ describe('BooksController (e2e)', () => {
         .withAuthors(authors)
         .build();
 
-      let id = 0;
+      let location = '';
       await request(app.getHttpServer())
         .post('/book')
         .send(postBody)
         .expect(201)
         .expect((res) => {
-          id = res.body.id;
+          location = res.headers.location.split(`${port}`)[1];
         });
+
+      const chunks = location.split('/');
+      const id = Number(chunks[chunks.length - 1]);
 
       const patchBody = await new UpdateBookRequestBuilder()
         .withBookId(id)
@@ -419,7 +370,7 @@ describe('BooksController (e2e)', () => {
 
       // act & assert
       await request(app.getHttpServer())
-        .patch(`/book/${id}`)
+        .patch(location)
         .send(patchBody)
         .expect(200)
         .expect((res) => {
