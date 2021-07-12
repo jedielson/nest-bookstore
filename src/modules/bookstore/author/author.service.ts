@@ -6,7 +6,11 @@ import {
   CreateAuthorRequest,
   CreateAuthorResponse,
 } from './dto/create-authors.dto';
-import { GetAuthorsRequest, GetAutorsResponse } from './dto/get-authors.dto';
+import {
+  AuthorBooks,
+  GetAuthorsRequest,
+  GetAuthorsResponse,
+} from './dto/get-authors.dto';
 
 @Injectable()
 export class AuthorService {
@@ -15,7 +19,7 @@ export class AuthorService {
     private readonly authorRepository: Repository<Author>,
   ) {}
 
-  async getAll(dto: GetAuthorsRequest): Promise<GetAutorsResponse[]> {
+  async getAll(dto: GetAuthorsRequest): Promise<GetAuthorsResponse[]> {
     const where = {};
 
     if (dto.name) {
@@ -26,22 +30,47 @@ export class AuthorService {
       where: where,
       take: dto.limit,
       skip: dto.offset,
+      relations: ['books'],
     });
 
     return data[0].map((x) => {
-      return { id: x.id, name: x.name };
+      return {
+        id: x.id,
+        name: x.name,
+        books: x.books?.map(
+          (b) =>
+            <AuthorBooks>{
+              id: b.id,
+              name: b.name,
+              edition: b.edition,
+              publicationYear: b.publicationYear,
+            },
+        ),
+      };
     });
   }
 
-  async find(id: number): Promise<GetAutorsResponse> {
-    const user = await this.authorRepository.findOne(id);
-    if (!user) {
+  async find(id: number): Promise<GetAuthorsResponse> {
+    const author = await this.authorRepository.findOne(id, {
+      relations: ['books'],
+    });
+
+    if (!author) {
       throw new NotFoundException();
     }
 
     return {
-      id: user.id,
-      name: user.name,
+      id: author.id,
+      name: author.name,
+      books: author.books?.map(
+        (b) =>
+          <AuthorBooks>{
+            id: b.id,
+            name: b.name,
+            edition: b.edition,
+            publicationYear: b.publicationYear,
+          },
+      ),
     };
   }
 

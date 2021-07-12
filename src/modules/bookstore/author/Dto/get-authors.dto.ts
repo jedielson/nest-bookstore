@@ -10,7 +10,15 @@ export class GetAuthorsRequest {
   limit: number;
 }
 
-export interface GetAutorsResponse {
+export interface AuthorBooks {
+  id: number;
+  name: string;
+  edition: string;
+  publicationYear: number;
+}
+
+export interface GetAuthorsResponse {
   id?: number;
   name?: string;
+  books?: AuthorBooks[];
 }
