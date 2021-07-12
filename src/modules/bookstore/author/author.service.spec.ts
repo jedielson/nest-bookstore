@@ -1,47 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import * as Factory from 'factory.ts';
 import { Repository } from 'typeorm';
-import { Author } from './author.entity';
-import { AuthorService } from './author.service';
-import { CreateAuthorRequest } from './dto/create-authors.dto';
-import { GetAuthorsRequest, GetAutorsResponse } from './dto/get-authors.dto';
+import { Author, AuthorService, AuthorBooks } from './';
 import * as Faker from 'faker';
+import {
+  AuthorBuilder,
+  CreateAuthorRequestBuilder,
+  GetAuthorsRequestBuilder,
+} from '../../../utils/test/authors';
+import { BookBuilder } from '../../../utils/test/books';
 
 describe('AuthorService', () => {
   let service: AuthorService;
   let mockRepository: Repository<Author>;
-
-  let authorsFactory: Factory.Async.TransformFactory<Author, any, Author>;
-  let authorsRequestFactory: Factory.Async.TransformFactory<
-    GetAuthorsRequest,
-    any,
-    GetAuthorsRequest
-  >;
-  let createAuthorRequestFactory: Factory.Sync.Factory<CreateAuthorRequest>;
-
-  beforeAll(() => {
-    const authors = Factory.Async.makeFactory<Author>(new Author());
-    authorsFactory = authors.transform((a: Author) => {
-      a.name = Faker.name.findName();
-      return a;
-    });
-
-    const getAuthorsRequest = Factory.Async.makeFactory<GetAuthorsRequest>(
-      new GetAuthorsRequest(),
-    );
-    authorsRequestFactory = getAuthorsRequest.transform(
-      (r: GetAuthorsRequest) => {
-        r.name = Faker.name.findName();
-        return r;
-      },
-    );
-
-    const author = new CreateAuthorRequest();
-    author.name = Faker.name.findName();
-    createAuthorRequestFactory =
-      Factory.Sync.makeFactory<CreateAuthorRequest>(author);
-  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -49,7 +20,6 @@ describe('AuthorService', () => {
         AuthorService,
         {
           provide: getRepositoryToken(Author),
-          //useValue: mockRepository,
           useClass: Repository,
         },
       ],
@@ -65,20 +35,35 @@ describe('AuthorService', () => {
 
   it('should get all', async () => {
     // arrange
-    const request = await authorsRequestFactory.build();
-    const authors = await authorsFactory.buildList(10);
-    jest
-      .spyOn(mockRepository, 'findAndCount')
-      .mockResolvedValueOnce([authors, 0]);
+    const request = await new GetAuthorsRequestBuilder()
+      .withDefaultConfigs()
+      .build();
+    const books = await new BookBuilder().buildList(
+      Faker.datatype.number({ min: 2, max: 6 }),
+    );
+    const authors = await new AuthorBuilder()
+      .withBooks(books)
+      .withDefaultConfigs()
+      .buildList(10);
+    mockRepository.findAndCount = jest.fn().mockResolvedValueOnce([authors, 0]);
 
     // act
     const result = await service.getAll(request);
 
     // assert
-    const expected = authors.map<GetAutorsResponse>((x) => {
-      const a: GetAutorsResponse = {
+    const expected = authors.map((x) => {
+      const a = {
         id: x.id,
         name: x.name,
+        books: x.books.map(
+          (b) =>
+            <AuthorBooks>{
+              id: b.id,
+              name: b.name,
+              edition: b.edition,
+              publicationYear: b.publicationYear,
+            },
+        ),
       };
       return a;
     });
@@ -87,22 +72,24 @@ describe('AuthorService', () => {
 
   it('create should return the author', async () => {
     // arrange
-    const request = createAuthorRequestFactory.build();
-    const author = new Author();
-    author.id = 1;
-    author.name = request.name;
+    const request = await new CreateAuthorRequestBuilder()
+      .withDefaultConfigs()
+      .build();
+    const author = await new AuthorBuilder().withDefaultConfigs().build();
     jest.spyOn(mockRepository, 'save').mockResolvedValueOnce(author);
 
     // act & assert
     await expect(service.create(request)).resolves.toStrictEqual({
-      id: 1,
-      name: request.name,
+      id: author.id,
+      name: author.name,
     });
   });
 
   it('create should call save', async () => {
     // arrange
-    const request = createAuthorRequestFactory.build();
+    const request = await new CreateAuthorRequestBuilder()
+      .withDefaultConfigs()
+      .build();
     const mockCreate = jest
       .spyOn(mockRepository, 'save')
       .mockResolvedValueOnce(new Author());

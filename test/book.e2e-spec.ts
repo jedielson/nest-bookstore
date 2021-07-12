@@ -4,7 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import * as Faker from 'faker';
 import { AppModule } from '../src/app.module';
-import { CreateAuthorRequestBuilder } from '../src/utils/test/author.spec-builders';
+import { CreateAuthorRequestBuilder } from '../src/utils/test/authors';
 import {
   CreateBookRequestBuilder,
   UpdateBookRequestBuilder,

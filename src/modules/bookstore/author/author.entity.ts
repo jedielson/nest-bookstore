@@ -13,6 +13,6 @@ export class Author {
   })
   name: string;
 
-  @ManyToMany(() => Book)
+  @ManyToMany(() => Book, (book) => book.authors)
   books: Book[];
 }

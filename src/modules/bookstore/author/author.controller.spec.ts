@@ -1,41 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthorController } from './author.controller';
-import { AuthorService } from './author.service';
-import { GetAuthorsRequest, GetAutorsResponse } from './dto/get-authors.dto';
-import * as Factory from 'factory.ts';
+import { AuthorController, AuthorService } from './';
 import {
-  CreateAuthorRequest,
-  CreateAuthorResponse,
-} from './dto/create-authors.dto';
-
-import * as Faker from 'faker';
+  CreateAuthorRequestBuilder,
+  GetAuthorsRequestBuilder,
+  GetAuthorsResponseBuilder,
+  CreateAuthorResponseBuilder,
+} from '../../../utils/test/authors';
 
 describe('AuthorController', () => {
   let controller: AuthorController;
   let service: AuthorService;
-  let authorsRequestFactory: Factory.Sync.Factory<GetAuthorsRequest>;
-  let authorResponseFactory: Factory.Sync.Factory<GetAutorsResponse>;
-  let createAuthorRequestFactory: Factory.Sync.Factory<CreateAuthorRequest>;
-  let createAuthorResponseFactory: Factory.Sync.Factory<CreateAuthorResponse>;
-
-  beforeAll(() => {
-    authorsRequestFactory = Factory.Sync.makeFactory<GetAuthorsRequest>(
-      new GetAuthorsRequest(),
-    );
-
-    authorResponseFactory = Factory.Sync.makeFactory<GetAutorsResponse>({});
-
-    const author = new CreateAuthorRequest();
-    author.name = Faker.name.findName();
-    createAuthorRequestFactory =
-      Factory.Sync.makeFactory<CreateAuthorRequest>(author);
-
-    createAuthorResponseFactory =
-      Factory.Sync.makeFactory<CreateAuthorResponse>({
-        id: 0,
-        name: '',
-      });
-  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -58,8 +32,12 @@ describe('AuthorController', () => {
 
   it('should return all authors', async () => {
     // arrange
-    const request = authorsRequestFactory.build();
-    const response = authorResponseFactory.buildList(10);
+    const request = await new GetAuthorsRequestBuilder()
+      .withDefaultConfigs()
+      .build();
+    const response = await new GetAuthorsResponseBuilder()
+      .withDefaultConfigs()
+      .buildList(10);
 
     service.getAll = jest.fn().mockResolvedValueOnce(response);
 
@@ -69,8 +47,12 @@ describe('AuthorController', () => {
 
   it('should return created author', async () => {
     // arrange
-    const request = createAuthorRequestFactory.build();
-    const response = createAuthorResponseFactory.build({ name: request.name });
+    const request = await new CreateAuthorRequestBuilder()
+      .withDefaultConfigs()
+      .build();
+    const response = await new CreateAuthorResponseBuilder()
+      .withDefaultConfigs()
+      .build();
 
     service.create = jest.fn().mockResolvedValueOnce(response);
 

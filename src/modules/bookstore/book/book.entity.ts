@@ -32,7 +32,7 @@ export class Book {
   })
   publicationYear: number;
 
-  @ManyToMany(() => Author)
+  @ManyToMany(() => Author, (author) => author.books)
   @JoinTable()
   authors: Author[];
 }

@@ -1,13 +1,13 @@
 import * as Factory from 'factory.ts';
 import * as Faker from 'faker';
-import { CreateAuthorRequest } from '../../modules/bookstore/author/dto/create-authors.dto';
-import { IBuilder } from './common/IBuilder';
+import { CreateAuthorRequest } from '../../../modules/bookstore/author/dto/create-authors.dto';
+import { IBuilder } from '../common/IBuilder';
 
 export class CreateAuthorRequestBuilder
   implements IBuilder<CreateAuthorRequestBuilder, CreateAuthorRequest>
 {
-  private asyncFactory: Factory.Async.Factory<CreateAuthorRequest, 'name'>;
-  private transformFactory: Factory.Async.TransformFactory<
+  asyncFactory: Factory.Async.Factory<CreateAuthorRequest, 'name'>;
+  transformFactory: Factory.Async.TransformFactory<
     CreateAuthorRequest,
     'name',
     CreateAuthorRequest
@@ -33,6 +33,7 @@ export class CreateAuthorRequestBuilder
           Faker.name.firstName(),
           Faker.name.lastName(),
         );
+
         return a;
       },
     );
