@@ -2,10 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BookController } from './book.controller';
 import { BookService } from './book.service';
 import * as Factory from 'factory.ts';
-import { GetBooksRequest, GetBooksResponse } from './dto/get-books.dto';
 import * as Faker from 'faker';
-import { CreateBookRequest, CreateBookResponse } from './dto/create-book.dto';
-import { UpdateBookRequest } from './dto/update-book.dto';
+import { CreateBookResponse, UpdateBookRequest } from './dto/';
+import {
+  CreateBookRequestBuilder,
+  GetBookResponseBuilder,
+  GetBooksRequestBuilder,
+  UpdateBookRequestBuilder,
+} from '../../../utils/test/books';
+import { AuthorBuilder } from '../../../utils/test/authors';
 
 describe('BookController', () => {
   let controller: BookController;
@@ -32,19 +37,15 @@ describe('BookController', () => {
 
   it('get all should call get all', async () => {
     // arrange
-    const getBooksRequestFactory = Factory.Sync.makeFactory<GetBooksRequest>(
-      new GetBooksRequest(),
-    );
+    const authors = await new AuthorBuilder().withDefaultConfigs().buildList(3);
+    const request = await new GetBooksRequestBuilder()
+      .withDefaultConfigs()
+      .build();
+    const response = await new GetBookResponseBuilder()
+      .withAuthors(authors)
+      .withDefaultConfigs()
+      .buildList(10);
 
-    const getBooksResponseFactory = Factory.Sync.makeFactory<GetBooksResponse>({
-      id: Factory.each((x) => x),
-      edition: Faker.hacker.abbreviation(),
-      name: Faker.name.findName(),
-      publicationYear: 0,
-    });
-
-    const request = getBooksRequestFactory.build();
-    const response = getBooksResponseFactory.buildList(10);
     service.getAll = jest.fn().mockResolvedValueOnce(response);
 
     // act
@@ -73,9 +74,6 @@ describe('BookController', () => {
 
   it('create book should call create', async () => {
     // arrange
-    const createBooksRequestFactory =
-      Factory.Sync.makeFactory<CreateBookRequest>(new CreateBookRequest());
-
     const createBooksResponseFactory =
       Factory.Sync.makeFactory<CreateBookResponse>({
         id: Faker.datatype.number(),
@@ -84,7 +82,9 @@ describe('BookController', () => {
         publicationYear: 0,
       });
 
-    const request = createBooksRequestFactory.build();
+    const request = await new CreateBookRequestBuilder()
+      .withDefaultConfigs()
+      .build();
     const response = createBooksResponseFactory.build();
     service.create = jest.fn().mockResolvedValueOnce(response);
 
@@ -98,10 +98,9 @@ describe('BookController', () => {
   it('update should call update', async () => {
     // arrange
     const id = Faker.datatype.number();
-    const updateBooksRequestFactory =
-      Factory.Sync.makeFactory<UpdateBookRequest>(new UpdateBookRequest());
-
-    const request = updateBooksRequestFactory.build();
+    const request = await new UpdateBookRequestBuilder()
+      .withDefaultConfigs()
+      .build();
     let receivedId = 0;
     service.update = jest.fn().mockImplementation((x: UpdateBookRequest) => {
       receivedId = x.id;

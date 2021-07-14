@@ -30,7 +30,7 @@ describe('JwtStrategy', () => {
 
   it('should unauthorize if no user', async () => {
     // arrange
-    usersService.findOneById = jest.fn().mockResolvedValueOnce(undefined);
+    usersService.findOneByEmail = jest.fn().mockResolvedValueOnce(undefined);
 
     // act & assert
     await expect(jwtService.validate({})).rejects.toThrowError(
@@ -40,7 +40,7 @@ describe('JwtStrategy', () => {
 
   it('should return same payload it authenticated', async () => {
     // arrange
-    usersService.findOneById = jest
+    usersService.findOneByEmail = jest
       .fn()
       .mockResolvedValueOnce({ name: 'some user', id: 1 });
 

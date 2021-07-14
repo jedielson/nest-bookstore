@@ -15,6 +15,7 @@ describe('BooksController (e2e)', () => {
   let pattern: RegExp;
   let port: number;
   let baseUrl: string;
+  let token = '';
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,6 +30,19 @@ describe('BooksController (e2e)', () => {
     port = url.port;
     baseUrl = 'http://127.0.0.1:' + url.port;
     pattern = new RegExp('^' + baseUrl + '/book/[0-9]+$', 'g');
+
+    await request(app.getHttpServer())
+      .post('/auth/signup')
+      .send({
+        name: Faker.name.findName(),
+        email: Faker.internet.email(),
+        password: Faker.internet.password(),
+        gender: 'male',
+      })
+      .expect(201)
+      .expect(function (res) {
+        token = res.body.token;
+      });
   });
 
   const createAuthors = async (): Promise<number[]> => {
@@ -42,6 +56,7 @@ describe('BooksController (e2e)', () => {
     for (let i = 0; i < countAuthors; i++) {
       await request(app.getHttpServer())
         .post('/author')
+        .set('Authorization', `Bearer ${token}`)
         .send(authorsRequests[i])
         .expect(201)
         .expect((res) => {
@@ -70,6 +85,7 @@ describe('BooksController (e2e)', () => {
       // act & assert
       await request(app.getHttpServer())
         .post('/book')
+        .set('Authorization', `Bearer ${token}`)
         .send(body)
         .expect(201)
         .expect((res) => {
@@ -79,6 +95,7 @@ describe('BooksController (e2e)', () => {
 
       await request(app.getHttpServer())
         .get(location)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.name).toBe(body.name);
@@ -102,6 +119,7 @@ describe('BooksController (e2e)', () => {
       for (let i = 0; i < 11; i++) {
         await request(app.getHttpServer())
           .post('/book')
+          .set('Authorization', `Bearer ${token}`)
           .send(booksRequests[i])
           .expect(201);
       }
@@ -109,6 +127,7 @@ describe('BooksController (e2e)', () => {
       // act & assert
       await request(app.getHttpServer())
         .get('/book?limit=10')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200)
         .expect(function (res) {
           expect(res.body.length).toBeGreaterThanOrEqual(10);
@@ -161,6 +180,7 @@ describe('BooksController (e2e)', () => {
       // act & assert
       await request(app.getHttpServer())
         .get('/book?limit=10')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200)
         .expect(function (res) {
           expect(res.body).toMatchSchema(schema);
@@ -180,6 +200,7 @@ describe('BooksController (e2e)', () => {
       let location = '';
       await request(app.getHttpServer())
         .post('/book')
+        .set('Authorization', `Bearer ${token}`)
         .send(body)
         .expect(201)
         .expect((res) => {
@@ -187,7 +208,10 @@ describe('BooksController (e2e)', () => {
         });
 
       // act & assert
-      await request(app.getHttpServer()).get(location).expect(200);
+      await request(app.getHttpServer())
+        .get(location)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
     });
 
     it('if not exists should return 404', async () => {
@@ -195,7 +219,10 @@ describe('BooksController (e2e)', () => {
       const id = Faker.datatype.number({ min: 10000, max: 100000 });
 
       // act & assert
-      await request(app.getHttpServer()).get(`/book/${id}`).expect(404);
+      await request(app.getHttpServer())
+        .get(`/book/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404);
     });
 
     it('should return schema', async () => {
@@ -244,6 +271,7 @@ describe('BooksController (e2e)', () => {
       let location = '';
       await request(app.getHttpServer())
         .post('/book')
+        .set('Authorization', `Bearer ${token}`)
         .send(body)
         .expect(201)
         .expect((res) => {
@@ -254,6 +282,7 @@ describe('BooksController (e2e)', () => {
       await request(app.getHttpServer())
         .get(location)
         .expect(200)
+        .set('Authorization', `Bearer ${token}`)
         .expect((res) => {
           expect(res.body).toMatchSchema(schema);
         });
@@ -266,7 +295,10 @@ describe('BooksController (e2e)', () => {
       const id = Faker.datatype.number({ min: 10000, max: 100000 });
 
       // act & assert
-      await request(app.getHttpServer()).delete(`/book/${id}`).expect(404);
+      await request(app.getHttpServer())
+        .delete(`/book/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404);
     });
 
     it('should return 204 if book exists', async () => {
@@ -280,6 +312,7 @@ describe('BooksController (e2e)', () => {
       let location = '';
       await request(app.getHttpServer())
         .post('/book')
+        .set('Authorization', `Bearer ${token}`)
         .send(body)
         .expect(201)
         .expect((res) => {
@@ -287,7 +320,10 @@ describe('BooksController (e2e)', () => {
         });
 
       // act & assert
-      await request(app.getHttpServer()).delete(location).expect(204);
+      await request(app.getHttpServer())
+        .delete(location)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(204);
     });
 
     it('should delete', async () => {
@@ -301,6 +337,7 @@ describe('BooksController (e2e)', () => {
       let location = '';
       await request(app.getHttpServer())
         .post('/book')
+        .set('Authorization', `Bearer ${token}`)
         .send(body)
         .expect(201)
         .expect((res) => {
@@ -308,10 +345,16 @@ describe('BooksController (e2e)', () => {
         });
 
       // act
-      await request(app.getHttpServer()).delete(location).expect(204);
+      await request(app.getHttpServer())
+        .delete(location)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(204);
 
       // assert
-      await request(app.getHttpServer()).get(location).expect(404);
+      await request(app.getHttpServer())
+        .get(location)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404);
     });
   });
 
@@ -321,7 +364,10 @@ describe('BooksController (e2e)', () => {
       const id = Faker.datatype.number({ min: 10000, max: 100000 });
 
       // act & assert
-      await request(app.getHttpServer()).patch(`/book/${id}`).expect(404);
+      await request(app.getHttpServer())
+        .patch(`/book/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404);
     });
 
     it('should update data', async () => {
@@ -338,6 +384,7 @@ describe('BooksController (e2e)', () => {
       await request(app.getHttpServer())
         .post('/book')
         .send(postBody)
+        .set('Authorization', `Bearer ${token}`)
         .expect(201)
         .expect((res) => {
           location = res.headers.location.split(`${port}`)[1];
@@ -354,6 +401,7 @@ describe('BooksController (e2e)', () => {
       // act
       await request(app.getHttpServer())
         .patch(location)
+        .set('Authorization', `Bearer ${token}`)
         .send(patchBody)
         .expect((res) => {
           if (res.statusCode !== 200) console.log(res.body);
@@ -363,6 +411,7 @@ describe('BooksController (e2e)', () => {
       // assert
       await request(app.getHttpServer())
         .get(location)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200)
         .expect((res) => {
           expect(res.body.id).toBe(id);
@@ -401,6 +450,7 @@ describe('BooksController (e2e)', () => {
       let location = '';
       await request(app.getHttpServer())
         .post('/book')
+        .set('Authorization', `Bearer ${token}`)
         .send(postBody)
         .expect(201)
         .expect((res) => {
@@ -418,6 +468,7 @@ describe('BooksController (e2e)', () => {
       // act & assert
       await request(app.getHttpServer())
         .patch(location)
+        .set('Authorization', `Bearer ${token}`)
         .send(patchBody)
         .expect(200)
         .expect((res) => {

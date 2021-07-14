@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import * as Faker from 'faker';
 import { matchers } from 'jest-json-schema';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -7,6 +8,7 @@ import { CreateAuthorRequestBuilder } from '../src/utils/test/authors';
 
 describe('AuthorsController (e2e)', () => {
   let app: INestApplication;
+  let token = '';
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -16,6 +18,19 @@ describe('AuthorsController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     expect.extend(matchers);
     await app.init();
+
+    await request(app.getHttpServer())
+      .post('/auth/signup')
+      .send({
+        name: Faker.name.findName(),
+        email: Faker.internet.email(),
+        password: Faker.internet.password(),
+        gender: 'male',
+      })
+      .expect(201)
+      .expect(function (res) {
+        token = res.body.token;
+      });
   });
 
   describe('/authors (POST)', () => {
@@ -34,6 +49,7 @@ describe('AuthorsController (e2e)', () => {
       // act & assert
       await request(app.getHttpServer())
         .post('/author')
+        .set('Authorization', `Bearer ${token}`)
         .send(body)
         .expect(201)
         .expect(function (res) {
@@ -44,6 +60,7 @@ describe('AuthorsController (e2e)', () => {
 
       await request(app.getHttpServer())
         .get(location)
+        .set('Authorization', `Bearer ${token}`)
         .expect((res) => {
           expect(res.body.name).toBe(body.name);
         })
@@ -61,6 +78,7 @@ describe('AuthorsController (e2e)', () => {
       for (let index = 0; index < size; index++) {
         await request(app.getHttpServer())
           .post('/author')
+          .set('Authorization', `Bearer ${token}`)
           .send(body[index])
           .expect(201);
       }
@@ -72,6 +90,7 @@ describe('AuthorsController (e2e)', () => {
       // act & assert
       await request(app.getHttpServer())
         .get('/author?limit=10')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200)
         .expect(function (res) {
           expect(res.body.length).toBeLessThanOrEqual(10);
@@ -124,6 +143,7 @@ describe('AuthorsController (e2e)', () => {
       // act & assert
       await request(app.getHttpServer())
         .get('/author?limit=10')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200)
         .expect(function (res) {
           expect(res.body).toMatchSchema(schema);

@@ -93,6 +93,6 @@ yarn db:inspect
 
 * [x] Make 201 responses return Location header
 * [x] Make responses of authors return books
-* [ ] Make responses of books return authors
+* [x] Make responses of books return authors
+* [x] Apply auth on every endpoint
 * [ ] Make sql queries more porformant
-* [ ] Apply auth on every endpoint
