@@ -92,8 +92,31 @@ describe('AuthorsController (e2e)', () => {
               name: {
                 type: 'string',
               },
+              books: {
+                type: 'array',
+                items: [
+                  {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'integer',
+                      },
+                      name: {
+                        type: 'string',
+                      },
+                      edition: {
+                        type: 'string',
+                      },
+                      publicationYear: {
+                        type: 'integer',
+                      },
+                    },
+                    required: ['id', 'name', 'edition', 'publicationYear'],
+                  },
+                ],
+              },
             },
-            required: ['id', 'name'],
+            required: ['id', 'name', 'books'],
           },
         ],
       };

@@ -6,9 +6,9 @@ import * as Faker from 'faker';
 import { AppModule } from '../src/app.module';
 import { CreateAuthorRequestBuilder } from '../src/utils/test/authors';
 import {
-  CreateBookRequestBuilder,
   UpdateBookRequestBuilder,
-} from '../src/utils/test/book.spec-builders';
+  CreateBookRequestBuilder,
+} from '../src/utils/test/books';
 
 describe('BooksController (e2e)', () => {
   let app: INestApplication;
@@ -95,6 +95,7 @@ describe('BooksController (e2e)', () => {
       // arrange
       const authors = await createAuthors();
       const booksRequests = await new CreateBookRequestBuilder()
+        .withDefaultConfigs()
         .withAuthors(authors)
         .buildList(11);
 
@@ -128,8 +129,31 @@ describe('BooksController (e2e)', () => {
               name: {
                 type: 'string',
               },
+              edition: {
+                type: 'string',
+              },
+              publicationYear: {
+                type: 'integer',
+              },
+              authors: {
+                type: 'array',
+                items: [
+                  {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'integer',
+                      },
+                      name: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['id', 'name'],
+                  },
+                ],
+              },
             },
-            required: ['id', 'name'],
+            required: ['id', 'name', 'edition', 'publicationYear', 'authors'],
           },
         ],
       };
@@ -149,6 +173,7 @@ describe('BooksController (e2e)', () => {
       // arrange
       const authors = await createAuthors();
       const body = await new CreateBookRequestBuilder()
+        .withDefaultConfigs()
         .withAuthors(authors)
         .build();
 
@@ -190,11 +215,29 @@ describe('BooksController (e2e)', () => {
           publicationYear: {
             type: 'integer',
           },
+          authors: {
+            type: 'array',
+            items: [
+              {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'integer',
+                  },
+                  name: {
+                    type: 'string',
+                  },
+                },
+                required: ['id', 'name'],
+              },
+            ],
+          },
         },
-        required: ['id', 'name', 'edition', 'publicationYear'],
+        required: ['id', 'name', 'edition', 'publicationYear', 'authors'],
       };
       const authors = await createAuthors();
       const body = await new CreateBookRequestBuilder()
+        .withDefaultConfigs()
         .withAuthors(authors)
         .build();
 
@@ -230,6 +273,7 @@ describe('BooksController (e2e)', () => {
       // arrange
       const authors = await createAuthors();
       const body = await new CreateBookRequestBuilder()
+        .withDefaultConfigs()
         .withAuthors(authors)
         .build();
 
@@ -250,6 +294,7 @@ describe('BooksController (e2e)', () => {
       // arrange
       const authors = await createAuthors();
       const body = await new CreateBookRequestBuilder()
+        .withDefaultConfigs()
         .withAuthors(authors)
         .build();
 
@@ -283,6 +328,7 @@ describe('BooksController (e2e)', () => {
       // arrange
       const authors = await createAuthors();
       const postBody = await new CreateBookRequestBuilder()
+        .withDefaultConfigs()
         .withAuthors(authors)
         .build();
 
@@ -348,6 +394,7 @@ describe('BooksController (e2e)', () => {
       };
       const authors = await createAuthors();
       const postBody = await new CreateBookRequestBuilder()
+        .withDefaultConfigs()
         .withAuthors(authors)
         .build();
 

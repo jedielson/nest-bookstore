@@ -5,13 +5,20 @@ import { Author } from '../author/author.entity';
 import { BookRulesService } from './book-rules/book-rules.service';
 import { Book } from './book.entity';
 import { BookService } from './book.service';
-import * as Factory from 'factory.ts';
 import * as Faker from 'faker';
-import { GetBooksRequest, GetBooksResponse } from './dto/get-books.dto';
+import { BookAuthors } from './dto/get-books.dto';
 import { Result } from '@badrap/result';
 import { CreateBookRequest, CreateBookResponse } from './dto/create-book.dto';
 import { UpdateBookRequest } from './dto/update-book.dto';
 import { NotFoundException } from '@nestjs/common';
+import {
+  BookBuilder,
+  CreateBookRequestBuilder,
+  GetBookResponseBuilder,
+  GetBooksRequestBuilder,
+  UpdateBookRequestBuilder,
+} from '../../../utils/test/books';
+import { AuthorBuilder } from '../../../utils/test/authors';
 
 describe('BookService', () => {
   let service: BookService;
@@ -48,19 +55,15 @@ describe('BookService', () => {
 
   it('get books should call find and count', async () => {
     // arrange
-    const getBooksRequestFactory = Factory.Sync.makeFactory<GetBooksRequest>(
-      new GetBooksRequest(),
-    );
+    const authors = await new AuthorBuilder().withDefaultConfigs().buildList(3);
+    const request = await new GetBooksRequestBuilder()
+      .withDefaultConfigs()
+      .build();
+    const response = await new GetBookResponseBuilder()
+      .withDefaultConfigs()
+      .withAuthors(authors)
+      .buildList(10);
 
-    const getBooksResponseFactory = Factory.Sync.makeFactory<GetBooksResponse>({
-      id: Factory.each((x) => x),
-      edition: Faker.hacker.abbreviation(),
-      name: Faker.name.findName(),
-      publicationYear: 0,
-    });
-
-    const request = getBooksRequestFactory.build();
-    const response = getBooksResponseFactory.buildList(10);
     bookRepository.findAndCount = jest
       .fn()
       .mockResolvedValueOnce([response, 0]);
@@ -74,22 +77,15 @@ describe('BookService', () => {
 
   it('get books should call map data correctly', async () => {
     // arrange
-    const getBooksRequestFactory = Factory.Sync.makeFactory<GetBooksRequest>(
-      new GetBooksRequest(),
-    );
+    const authors = await new AuthorBuilder().withDefaultConfigs().buildList(3);
+    const request = await new GetBooksRequestBuilder()
+      .withDefaultConfigs()
+      .build();
+    const response = await new BookBuilder()
+      .withDefaultConfigs()
+      .withAuthors(authors)
+      .buildList(10);
 
-    const getBooksResponseFactory = Factory.Async.makeFactory<Book>(
-      new Book(),
-    ).transform((x: Book) => {
-      x.id = Faker.datatype.number();
-      x.name = Faker.name.findName();
-      x.edition = Faker.datatype.string(10);
-      x.publicationYear = Faker.date.future().getFullYear();
-      return x;
-    });
-
-    const request = getBooksRequestFactory.build();
-    const response = await getBooksResponseFactory.buildList(10);
     bookRepository.findAndCount = jest
       .fn()
       .mockResolvedValueOnce([response, 0]);
@@ -103,6 +99,13 @@ describe('BookService', () => {
           name: x.name,
           edition: x.edition,
           publicationYear: x.publicationYear,
+          authors: x.authors?.map(
+            (a) =>
+              <BookAuthors>{
+                id: a.id,
+                name: a.name,
+              },
+          ),
         };
       }),
     );
@@ -111,6 +114,7 @@ describe('BookService', () => {
   it('create should validate if authors exists', async () => {
     // arrange
     bookRepository.create = jest.fn().mockResolvedValueOnce(new Book());
+
     const error = Error('Ronaldo');
     const result = Result.err(error);
 
@@ -127,17 +131,9 @@ describe('BookService', () => {
 
   it('create should call create', async () => {
     // arrange
-    const createBooksRequestFactory =
-      Factory.Async.makeFactory<CreateBookRequest>(
-        new CreateBookRequest(),
-      ).transform((x: CreateBookRequest) => {
-        x.author = <number[]>Faker.datatype.array(10);
-        x.name = Faker.name.findName();
-        x.publicationYear = Faker.date.past().getFullYear();
-        x.edition = Faker.datatype.string(10);
-        return x;
-      });
-    const request = await createBooksRequestFactory.build();
+    const request = await new CreateBookRequestBuilder()
+      .withDefaultConfigs()
+      .build();
 
     const book = new Book();
     book.edition = request.edition;
@@ -159,17 +155,9 @@ describe('BookService', () => {
 
   it('create should return data correctly', async () => {
     // arrange
-    const createBooksRequestFactory =
-      Factory.Async.makeFactory<CreateBookRequest>(
-        new CreateBookRequest(),
-      ).transform((x: CreateBookRequest) => {
-        x.author = <number[]>Faker.datatype.array(10);
-        x.name = Faker.name.findName();
-        x.publicationYear = Faker.date.past().getFullYear();
-        x.edition = Faker.datatype.string(10);
-        return x;
-      });
-    const request = await createBooksRequestFactory.build();
+    const request = await new CreateBookRequestBuilder()
+      .withDefaultConfigs()
+      .build();
     const response: CreateBookResponse = {
       id: 1,
       edition: request.edition,
@@ -215,17 +203,10 @@ describe('BookService', () => {
 
   it('update should call save', async () => {
     // arrange
-    const updateBooksRequestFactory =
-      Factory.Async.makeFactory<UpdateBookRequest>(
-        new UpdateBookRequest(),
-      ).transform((x: UpdateBookRequest) => {
-        x.author = <number[]>Faker.datatype.array(10);
-        x.name = Faker.name.findName();
-        x.publicationYear = Faker.date.past().getFullYear();
-        x.edition = Faker.datatype.string(10);
-        return x;
-      });
-    const request = await updateBooksRequestFactory.build();
+    const request = await new UpdateBookRequestBuilder()
+      .withDefaultConfigs()
+      .withBookId(1)
+      .build();
 
     const book = new Book();
     book.edition = request.edition;
@@ -248,18 +229,10 @@ describe('BookService', () => {
 
   it('update should return correct data', async () => {
     // arrange
-    const updateBooksRequestFactory =
-      Factory.Async.makeFactory<UpdateBookRequest>(
-        new UpdateBookRequest(),
-      ).transform((x: UpdateBookRequest) => {
-        x.id = Faker.datatype.number();
-        x.author = <number[]>Faker.datatype.array(10);
-        x.name = Faker.name.findName();
-        x.publicationYear = Faker.date.past().getFullYear();
-        x.edition = Faker.datatype.string(10);
-        return x;
-      });
-    const request = await updateBooksRequestFactory.build();
+    const request = await new UpdateBookRequestBuilder()
+      .withDefaultConfigs()
+      .withBookId(1)
+      .build();
 
     const book = new Book();
     book.id = request.id;

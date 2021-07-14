@@ -6,9 +6,9 @@ import { BookRulesService } from './book-rules/book-rules.service';
 import { Book } from './book.entity';
 import { CreateBookRequest, CreateBookResponse } from './dto/create-book.dto';
 import {
+  BookAuthors,
   GetBookResponse,
   GetBooksRequest,
-  GetBooksResponse,
 } from './dto/get-books.dto';
 import { UpdateBookRequest, UpdateBookResponse } from './dto/update-book.dto';
 
@@ -21,10 +21,11 @@ export class BookService {
     private readonly bookRules: BookRulesService,
   ) {}
 
-  async getAll(req: GetBooksRequest): Promise<GetBooksResponse[]> {
+  async getAll(req: GetBooksRequest): Promise<GetBookResponse[]> {
     const data = await this.bookRepository.findAndCount({
       skip: req.offset,
       take: req.limit,
+      relations: ['authors'],
     });
     return data[0].map((x) => {
       return {
@@ -32,12 +33,21 @@ export class BookService {
         name: x.name,
         edition: x.edition,
         publicationYear: x.publicationYear,
+        authors: x.authors.map(
+          (b) =>
+            <BookAuthors>{
+              id: b.id,
+              name: b.name,
+            },
+        ),
       };
     });
   }
 
   async getOne(id: number): Promise<GetBookResponse> {
-    const data = await this.bookRepository.findOne(id);
+    const data = await this.bookRepository.findOne(id, {
+      relations: ['authors'],
+    });
 
     if (!data) {
       throw new NotFoundException();
@@ -48,6 +58,13 @@ export class BookService {
       name: data.name,
       edition: data.edition,
       publicationYear: data.publicationYear,
+      authors: data.authors.map(
+        (b) =>
+          <BookAuthors>{
+            id: b.id,
+            name: b.name,
+          },
+      ),
     };
   }
 

@@ -12,11 +12,9 @@ export class GetBooksRequest {
   limit: number;
 }
 
-export interface GetBooksResponse {
+export interface BookAuthors {
   id: number;
   name: string;
-  edition: string;
-  publicationYear: number;
 }
 
 export interface GetBookResponse {
@@ -24,4 +22,5 @@ export interface GetBookResponse {
   name: string;
   edition: string;
   publicationYear: number;
+  authors?: BookAuthors[];
 }

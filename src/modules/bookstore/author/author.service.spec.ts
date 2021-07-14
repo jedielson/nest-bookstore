@@ -38,9 +38,9 @@ describe('AuthorService', () => {
     const request = await new GetAuthorsRequestBuilder()
       .withDefaultConfigs()
       .build();
-    const books = await new BookBuilder().buildList(
-      Faker.datatype.number({ min: 2, max: 6 }),
-    );
+    const books = await new BookBuilder()
+      .withDefaultConfigs()
+      .buildList(Faker.datatype.number({ min: 2, max: 6 }));
     const authors = await new AuthorBuilder()
       .withBooks(books)
       .withDefaultConfigs()
