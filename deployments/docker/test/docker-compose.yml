@@ -1,0 +1,13 @@
+version: "3"
+services:
+  
+  main:
+    container_name: main
+    build:
+        dockerfile: ./deployments/docker/test/Dockerfile
+        context: ../../..
+        target: development
+    ports:
+        - 3000:3000
+    depends_on:
+        - postgres

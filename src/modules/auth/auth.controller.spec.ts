@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DoesUserExistGuard } from '../../core/guards/does-user-exist.guard';
-import { CreateUserResponse, UserDto } from '../users/dto/user.dto';
+import { CreateUserResponse, LoginDto, UserDto } from '../users/dto/user.dto';
 import { UsersService } from '../users/users.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -41,7 +41,7 @@ describe('AuthController', () => {
     service.login = jest.fn().mockResolvedValueOnce('some return');
 
     // act & assert
-    await expect(controller.login({ user: '' })).resolves.toBe('some return');
+    await expect(controller.login(new LoginDto())).resolves.toBe('some return');
   });
 
   it('signup should return a user', async () => {

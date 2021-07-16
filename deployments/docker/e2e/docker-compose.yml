@@ -1,0 +1,65 @@
+version: "3"
+services:
+  database:
+    image: postgres:alpine
+    container_name: postgres
+    restart: on-failure
+    ports: 
+        - "5432:5432"
+    environment: 
+        POSTGRES_USER: pguser
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_MULTIPLE_DATABASES: bookstore
+    volumes: 
+        - ../../../deployments/local/pg:/docker-entrypoint-initdb.d/
+    networks: 
+        - bookstore-network
+    mem_limit: 1gb
+
+  main:
+    container_name: main
+    build:
+        dockerfile: ./deployments/docker/e2e/Dockerfile
+        context: ../../..
+        target: development
+    environment: 
+        - TYPEORM_HOST=host.docker.internal
+        - TYPEORM_PORT=5432
+        - TYPEORM_USERNAME=pguser
+        - TYPEORM_PASSWORD=postgres
+        - TYPEORM_CONNECTION=postgres
+        - TYPEORM_DATABASE=postgres
+        - TYPEORM_SYNCHRONIZE=false
+        - TYPEORM_LOGGING=true
+        - TYPEORM_ENTITIES=./src/**/*.entity.ts
+        - TYPEORM_LOGGING=false
+        - TYPEORM_MIGRATIONS=./dist/migrations/*.js
+        - TYPEORM_MIGRATIONS_DIR=./src/migrations        
+        - JWTKEY=random_secret_key
+        - TOKEN_EXPIRATION=48h
+        - BEARER=Bearer
+    ports:
+        - 3000:3000
+    networks:
+        - bookstore-network
+    depends_on:
+        - postgres
+
+#   pgadmin:
+#     depends_on: 
+#         - database
+#     image: dpage/pgadmin4
+#     container_name: "pgadmin-MS"
+#     environment:
+#         # HOST: host.docker.internal
+#         PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+#         PGADMIN_DEFAULT_PASSWORD: "postgres"
+#     ports: 
+#         - "8001:80"
+#     networks: 
+#         - bookstore-network
+#     mem_limit: 128mb
+
+networks:
+    bookstore-network:
+        driver: bridge
